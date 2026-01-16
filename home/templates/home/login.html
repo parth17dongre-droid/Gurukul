@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Gurukul</title>
+    <link rel="stylesheet" href="{% static 'home/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Student Login</h1>
+        
+        {% if form.errors %}
+            <div style="background-color: #ff4d4d; color: white; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+                <p style="margin: 0;"><strong>Error:</strong> Invalid username or password.</p>
+            </div>
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <input class="form-input" type="text" name="username" placeholder="Username" required>
+            </div>
+            
+            <div class="form-group">
+                <input class="form-input" type="password" name="password" placeholder="Password" required>
+            </div>
+
+            <button type="submit">Enter Dashboard</button>
+        </form>
+    </div>
+</body>
+</html>
