@@ -1,0 +1,223 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gurukul AI - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            --primary: #4e54c8;
+            --secondary: #8f94fb;
+            --accent: #ff6b6b;
+            --success: #00b894;
+            --bg-dark: #1a1a2e;
+            --bg-panel: #16213e;
+            --bg-card: #242444;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --sidebar-width: 260px;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-dark); color: var(--text-main);
+            display: flex; height: 100vh; overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--sidebar-width); background-color: #12122c;
+            padding: 20px; display: flex; flex-direction: column;
+            border-right: 1px solid #333;
+        }
+        .brand {
+            font-size: 1.6rem; font-weight: bold; margin-bottom: 40px;
+            color: var(--secondary); display: flex; align-items: center; gap: 10px;
+        }
+        .menu-item {
+            padding: 14px 15px; margin-bottom: 8px; border-radius: 10px;
+            color: var(--text-muted); cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; gap: 15px; font-size: 0.95rem;
+            text-decoration: none;
+        }
+        .menu-item:hover, .menu-item.active {
+            background-color: rgba(78, 84, 200, 0.2); color: var(--secondary);
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1; padding: 30px; overflow-y: auto;
+        }
+        .header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
+        }
+        .user-pill {
+            background: var(--bg-card); padding: 8px 15px; border-radius: 30px;
+            display: flex; align-items: center; gap: 10px; cursor: pointer;
+        }
+        
+        /* --- VIEW SECTIONS --- */
+        .view-section { display: none; animation: fadeIn 0.4s; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- GRID & CARDS --- */
+        .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 25px; }
+        .card {
+            background: var(--bg-card); border-radius: 16px; padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .span-8 { grid-column: span 8; }
+        .span-4 { grid-column: span 4; }
+        .span-12 { grid-column: span 12; }
+        .card h3 { margin-top: 0; color: var(--text-main); font-size: 1.1rem; margin-bottom: 20px; }
+
+        /* --- CONSTRUCTION STATE (New Style) --- */
+        .construction-box {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 60px; text-align: center; height: 100%;
+        }
+        .construction-box i { font-size: 4rem; color: var(--secondary); margin-bottom: 20px; opacity: 0.8; }
+        .construction-box h2 { margin: 0 0 10px 0; }
+        .construction-box p { color: var(--text-muted); max-width: 400px; line-height: 1.5; }
+
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand"><i class="fa-solid fa-brain"></i> Gurukul AI</div>
+        
+        <div class="menu-item active" onclick="switchView('dashboard', this)">
+            <i class="fa-solid fa-house"></i> Dashboard
+        </div>
+        <div class="menu-item" onclick="switchView('attendance', this)">
+            <i class="fa-solid fa-calendar-check"></i> Attendance Tracker
+        </div>
+        <div class="menu-item" onclick="switchView('ai-notes', this)">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes & Flashcards
+        </div>
+        <div class="menu-item" onclick="switchView('quiz', this)">
+            <i class="fa-solid fa-clipboard-question"></i> Daily Quizzes
+        </div>
+        <div class="menu-item" onclick="switchView('friends', this)">
+            <i class="fa-solid fa-user-group"></i> Study Friends
+        </div>
+        <div class="menu-item" onclick="switchView('cgpa', this)">
+            <i class="fa-solid fa-chart-line"></i> CGPA Planner
+        </div>
+
+        <form action="{% url 'logout' %}" method="post" style="margin-top: auto; width: 100%;">
+            {% csrf_token %}
+            <button type="submit" class="menu-item" style="background: none; border: none; width: 100%; text-align: left; font-family: inherit; font-size: 0.95rem; color: var(--accent); padding: 14px 15px; cursor: pointer;">
+                <i class="fa-solid fa-power-off"></i> Logout
+            </button>
+        </form>
+    </nav>
+
+    <main class="main-content">
+        <header class="header">
+            <div>
+                <h2 style="margin:0;">Hello, {{ user.username|title }} 👋</h2>
+                <p style="margin:5px 0 0 0; color: var(--text-muted);">Let's get that {{ profile.target_cgpa }} CGPA today.</p>
+            </div>
+            <div class="user-pill">
+                <i class="fa-solid fa-user-circle"></i> {{ user.username|title }}
+            </div>
+        </header>
+
+        <div id="dashboard" class="view-section active">
+            <div class="grid">
+                <div class="card span-8" style="border-left: 5px solid var(--accent);">
+                    <h3><i class="fa-solid fa-thumbtack"></i> Virtual Softboard</h3>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px;">
+                        <span>📝 <strong>Partial Differentiation Test</strong></span>
+                        <span style="color:var(--accent);">Tomorrow, 10 AM</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px;">
+                        <span>📤 <strong>Data Structures Assignment</strong></span>
+                        <span style="color:var(--text-muted);">Due Friday</span>
+                    </div>
+                </div>
+
+                <div class="card span-4" style="text-align:center;">
+                    <h3>Attendance Health</h3>
+                    <div style="font-size:2.5rem; font-weight:bold; color:var(--success); margin-bottom:10px;">{{ profile.attendance_percentage }}%</div>
+                    <p style="color:var(--text-muted); font-size:0.9rem;">
+                        {% if profile.attendance_percentage < 75 %}
+                            ⚠️ Risk! Attend more classes.
+                        {% else %}
+                            ✅ You are safe (for now).
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div id="attendance" class="view-section">
+            <div class="card" style="height: 60vh;">
+                <div class="construction-box">
+                    <i class="fa-solid fa-person-digging"></i>
+                    <h2>Detailed Tracker Coming Soon</h2>
+                    <p>We are currently connecting this feature to the university database. Check back later!</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="ai-notes" class="view-section">
+            <div class="card" style="height: 60vh;">
+                <div class="construction-box">
+                    <i class="fa-solid fa-robot"></i>
+                    <h2>AI Assistant is Sleeping</h2>
+                    <p>Our AI is currently learning how to summarize your notes better. Feature under construction.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="quiz" class="view-section">
+            <div class="card" style="height: 60vh;">
+                <div class="construction-box">
+                    <i class="fa-solid fa-pencil"></i>
+                    <h2>Quiz Module In Progress</h2>
+                    <p>We are building a question bank generator. This feature will be available in v1.1.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="friends" class="view-section">
+            <div class="card" style="height: 60vh;">
+                <div class="construction-box">
+                    <i class="fa-solid fa-users-gear"></i>
+                    <h2>Social Hub Building...</h2>
+                    <p>Invite your friends feature is being polished. You will be able to compare stats soon!</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="cgpa" class="view-section">
+            <div class="card" style="height: 60vh;">
+                <div class="construction-box">
+                    <i class="fa-solid fa-calculator"></i>
+                    <h2>CGPA Calculator In Works</h2>
+                    <p>We are fine-tuning the SGPA to CGPA conversion logic. Stay tuned!</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function switchView(viewId, element) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
+    </script>
+</body>
+</html>

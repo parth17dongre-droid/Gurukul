@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Gurukul</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'home/style.css' %}">
+    
+    <style>
+        /* CSS to style the Django Form fields */
+        .glass-input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .glass-input:focus {
+            border-color: #00dbde;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        /* Hide the bullet points for password help text */
+        .helptext { display: none; }
+        ul { list-style: none; padding: 0; color: #ffcccc; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Create Account</h1>
+        <p style="margin-bottom: 20px; color: #a0a0a0;">Join Gurukul AI today</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div style="margin-bottom: 10px;">
+                    {{ field }}
+                    {% if field.errors %}
+                        <div style="color: #ff6b6b; font-size: 0.8rem; text-align: left;">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" style="width: 100%; margin-top: 10px;">Sign Up & Login</button>
+        </form>
+
+        <p style="margin-top: 20px; font-size: 0.9rem;">
+            Already have an account? <a href="{% url 'login' %}" style="color: #00dbde; text-decoration: none; font-weight: bold;">Login here</a>
+        </p>
+    </div>
+
+</body>
+</html>

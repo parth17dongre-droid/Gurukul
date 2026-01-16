@@ -1,16 +1,34 @@
-{% load static %} <!DOCTYPE html>
-<html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gurukul Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'home/style.css' %}">
 </head>
 <body>
     
     <div class="container">
         <h1>Welcome to Gurukul</h1>
-        <p>Your AI-powered student attendance companion.</p>
-        <hr style="border-color: #0f3460;">
-        <button>Login to Dashboard</button>
+        <p style="margin-bottom: 20px; font-weight: 300;">Your AI-powered student attendance companion.</p>
+        
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px;">
+        
+        <div style="display: flex; gap: 15px; justify-content: center;">
+            
+            <a href="{% url 'login' %}">
+                <button style="width: 150px;">Login</button>
+            </a>
+
+            <a href="{% url 'signup' %}">
+                <button style="width: 150px; background: transparent; border: 1px solid #00dbde; color: #00dbde;">
+                    Sign Up
+                </button>
+            </a>
+            
+        </div>
     </div>
 
 </body>

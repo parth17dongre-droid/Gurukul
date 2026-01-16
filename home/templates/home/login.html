@@ -1,16 +1,42 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Gurukul</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'home/style.css' %}">
+    
+    <style>
+        /* Specific styles for the login form inputs */
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+        .form-input::placeholder { color: rgba(255, 255, 255, 0.6); }
+        .form-input:focus {
+            border-color: #00dbde;
+            background: rgba(255, 255, 255, 0.15);
+        }
+    </style>
 </head>
 <body>
+
     <div class="container">
         <h1>Student Login</h1>
         
         {% if form.errors %}
-            <div style="background-color: #ff4d4d; color: white; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+            <div style="background-color: rgba(255, 77, 77, 0.2); border: 1px solid #ff4d4d; color: #ffcccc; padding: 10px; border-radius: 10px; margin-bottom: 20px;">
                 <p style="margin: 0;"><strong>Error:</strong> Invalid username or password.</p>
             </div>
         {% endif %}
@@ -26,8 +52,17 @@
                 <input class="form-input" type="password" name="password" placeholder="Password" required>
             </div>
 
-            <button type="submit">Enter Dashboard</button>
+            <button type="submit" style="width: 100%; margin-top: 10px;">Enter Dashboard</button>
         </form>
+
+        <div style="margin-top: 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+            <p style="color: #a0a0a0; font-size: 0.9rem; margin: 0;">
+                Don't have an account? 
+                <a href="{% url 'signup' %}" style="color: #00dbde; text-decoration: none; font-weight: bold; transition: 0.3s;">Sign Up Here</a>
+            </p>
+        </div>
+
     </div>
+
 </body>
 </html>

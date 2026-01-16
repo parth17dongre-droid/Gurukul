@@ -116,3 +116,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+# This looks for path(..., name='dashboard') in urls.py
+LOGIN_REDIRECT_URL = 'dashboard' 
+
+# This looks for path(..., name='index') in urls.py
+LOGOUT_REDIRECT_URL = 'index'
