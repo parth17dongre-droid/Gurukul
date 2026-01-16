@@ -57,3 +57,67 @@ button:hover {
 button:active {
     transform: scale(0.98);
 }
+/* --- ATTENDANCE PAGE STYLES (Add to bottom of style.css) --- */
+
+/* 1. Upload Box */
+.upload-container {
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    background: rgba(255, 255, 255, 0.02);
+    transition: 0.3s;
+}
+.upload-container:hover {
+    border-color: var(--secondary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* 2. Session Cards (The list of today's classes) */
+.session-card {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-left: 5px solid var(--secondary); /* Default color */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* 3. Action Buttons (Present/Absent) */
+.btn-action {
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+    margin-left: 5px;
+}
+.btn-present {
+    background: rgba(0, 184, 148, 0.1);
+    color: var(--success);
+    border: 1px solid var(--success);
+}
+.btn-present:hover { background: var(--success); color: white; }
+
+.btn-absent {
+    background: rgba(255, 107, 107, 0.1);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+}
+.btn-absent:hover { background: var(--accent); color: white; }
+
+/* 4. Stats Table */
+.stats-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+.stats-table th { text-align: left; color: var(--text-muted); padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.stats-table td { padding: 15px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-main); }

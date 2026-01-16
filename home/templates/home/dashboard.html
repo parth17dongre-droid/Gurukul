@@ -76,7 +76,7 @@
         .span-12 { grid-column: span 12; }
         .card h3 { margin-top: 0; color: var(--text-main); font-size: 1.1rem; margin-bottom: 20px; }
 
-        /* --- CONSTRUCTION STATE (New Style) --- */
+        /* --- CONSTRUCTION STATE --- */
         .construction-box {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 60px; text-align: center; height: 100%;
@@ -92,12 +92,14 @@
     <nav class="sidebar">
         <div class="brand"><i class="fa-solid fa-brain"></i> Gurukul AI</div>
         
-        <div class="menu-item active" onclick="switchView('dashboard', this)">
+        <a href="{% url 'dashboard' %}" class="menu-item active">
             <i class="fa-solid fa-house"></i> Dashboard
-        </div>
-        <div class="menu-item" onclick="switchView('attendance', this)">
+        </a>
+
+        <a href="{% url 'attendance' %}" class="menu-item">
             <i class="fa-solid fa-calendar-check"></i> Attendance Tracker
-        </div>
+        </a>
+
         <div class="menu-item" onclick="switchView('ai-notes', this)">
             <i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes & Flashcards
         </div>
@@ -138,32 +140,12 @@
                         <span>📝 <strong>Partial Differentiation Test</strong></span>
                         <span style="color:var(--accent);">Tomorrow, 10 AM</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px;">
-                        <span>📤 <strong>Data Structures Assignment</strong></span>
-                        <span style="color:var(--text-muted);">Due Friday</span>
-                    </div>
                 </div>
 
                 <div class="card span-4" style="text-align:center;">
                     <h3>Attendance Health</h3>
                     <div style="font-size:2.5rem; font-weight:bold; color:var(--success); margin-bottom:10px;">{{ profile.attendance_percentage }}%</div>
-                    <p style="color:var(--text-muted); font-size:0.9rem;">
-                        {% if profile.attendance_percentage < 75 %}
-                            ⚠️ Risk! Attend more classes.
-                        {% else %}
-                            ✅ You are safe (for now).
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div id="attendance" class="view-section">
-            <div class="card" style="height: 60vh;">
-                <div class="construction-box">
-                    <i class="fa-solid fa-person-digging"></i>
-                    <h2>Detailed Tracker Coming Soon</h2>
-                    <p>We are currently connecting this feature to the university database. Check back later!</p>
+                    <a href="{% url 'attendance' %}" style="color: var(--secondary); text-decoration: none; font-size: 0.9rem;">View Details &rarr;</a>
                 </div>
             </div>
         </div>
@@ -177,43 +159,15 @@
                 </div>
             </div>
         </div>
-
-        <div id="quiz" class="view-section">
-            <div class="card" style="height: 60vh;">
-                <div class="construction-box">
-                    <i class="fa-solid fa-pencil"></i>
-                    <h2>Quiz Module In Progress</h2>
-                    <p>We are building a question bank generator. This feature will be available in v1.1.</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="friends" class="view-section">
-            <div class="card" style="height: 60vh;">
-                <div class="construction-box">
-                    <i class="fa-solid fa-users-gear"></i>
-                    <h2>Social Hub Building...</h2>
-                    <p>Invite your friends feature is being polished. You will be able to compare stats soon!</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="cgpa" class="view-section">
-            <div class="card" style="height: 60vh;">
-                <div class="construction-box">
-                    <i class="fa-solid fa-calculator"></i>
-                    <h2>CGPA Calculator In Works</h2>
-                    <p>We are fine-tuning the SGPA to CGPA conversion logic. Stay tuned!</p>
-                </div>
-            </div>
-        </div>
-
-    </main>
+        
+        </main>
 
     <script>
         function switchView(viewId, element) {
+            // Only switch views for the remaining SPA sections (AI Notes, Quiz, etc)
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
+            const target = document.getElementById(viewId);
+            if(target) target.classList.add('active');
             
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
             element.classList.add('active');

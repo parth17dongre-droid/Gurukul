@@ -15,3 +15,11 @@ class SignUpForm(UserCreationForm):
                 'class': 'glass-input', 
                 'placeholder': field.capitalize()
             })
+class TimetableUploadForm(forms.Form):
+    file = forms.FileField()
+    batch = forms.CharField(max_length=10, label="Your Batch (e.g., A1, B2)")
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['file'].widget.attrs.update({'class': 'glass-input'})
+        self.fields['batch'].widget.attrs.update({'class': 'glass-input', 'placeholder': 'Enter Batch (e.g., A1)'})
