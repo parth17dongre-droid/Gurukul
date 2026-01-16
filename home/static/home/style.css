@@ -1,7 +1,8 @@
 body {
-    background-color: #1a1a2e;
-    color: #e0e0e0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Using a vibrant mesh gradient for the background */
+    background: radial-gradient(circle at top left, #2b1055, #000000);
+    color: #ffffff;
+    font-family: 'Poppins', 'Segoe UI', sans-serif; /* Poppins feels more modern/vibrant */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -10,32 +11,49 @@ body {
 }
 
 .container {
-    background-color: #16213e;
-    padding: 2rem;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    /* Glassmorphism effect: semi-transparent with a blur */
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    padding: 2.5rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
     text-align: center;
     max-width: 400px;
-    width: 100%;
+    width: 90%;
 }
 
 h1 {
-    color: #e94560;
+    /* Gradient text for maximum vibrancy */
+    background: linear-gradient(to right, #00dbde, #fc00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 2.5rem;
     margin-bottom: 0.5rem;
+    letter-spacing: -1px;
 }
 
 button {
-    background-color: #0f3460;
+    /* Electric gradient button */
+    background: linear-gradient(45deg, #fc00ff, #00dbde);
     color: white;
+    font-weight: bold;
     border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
+    padding: 12px 30px;
+    border-radius: 50px; /* Pill shape is more modern */
     cursor: pointer;
     font-size: 1rem;
     margin-top: 20px;
-    transition: background 0.3s;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 button:hover {
-    background-color: #e94560;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 219, 222, 0.6);
+}
+
+button:active {
+    transform: scale(0.98);
 }
