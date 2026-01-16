@@ -4,30 +4,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gurukul Home</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Gurukul AI - The Future of Study</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'home/style.css' %}">
+    <style>
+        /* Specific Landing Page Styles */
+        .hero-section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            margin-top: 80px;
+            width: 100%;
+        }
+
+        .feature-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-glass);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: left;
+            transition: 0.3s;
+        }
+        .feature-card:hover {
+            background: rgba(255,255,255,0.05);
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+    </style>
 </head>
 <body>
-    
-    <div class="container">
-        <h1>Welcome to Gurukul</h1>
-        <p style="margin-bottom: 20px; font-weight: 300;">Your AI-powered student attendance companion.</p>
-        
-        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px;">
-        
-        <div style="display: flex; gap: 15px; justify-content: center;">
-            
-            <a href="{% url 'login' %}">
-                <button style="width: 150px;">Login</button>
-            </a>
 
-            <a href="{% url 'signup' %}">
-                <button style="width: 150px; background: transparent; border: 1px solid #00dbde; color: #00dbde;">
-                    Sign Up
-                </button>
-            </a>
-            
+    <nav style="position: absolute; top: 20px; left: 40px; font-weight: 700; font-size: 1.2rem; display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-brain" style="color: var(--primary);"></i> Gurukul
+    </nav>
+
+    <div class="hero-section">
+        <h1 class="hero-title">Master Your Engineering<br>Journey with AI.</h1>
+        <p class="hero-subtitle">
+            Automated attendance tracking, smart CGPA planning, and AI-generated notes. 
+            The operating system for modern students.
+        </p>
+        
+        <div class="cta-group">
+            <a href="{% url 'login' %}" class="btn-glass">Log In</a>
+            <a href="{% url 'signup' %}" class="btn-glass btn-primary">Get Started <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <i class="fa-solid fa-calendar-check" style="color: var(--secondary); font-size: 1.5rem; margin-bottom: 15px;"></i>
+                <h3 style="margin-bottom: 10px;">Smart Attendance</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Upload your timetable once. We track your daily progress and warn you before you hit 75%.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 15px;"></i>
+                <h3 style="margin-bottom: 10px;">AI Flashcards</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Turn boring PDF notes into interactive flashcards and summaries instantly.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fa-solid fa-chart-line" style="color: var(--success); font-size: 1.5rem; margin-bottom: 15px;"></i>
+                <h3 style="margin-bottom: 10px;">CGPA Planner</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Set a target CGPA. We calculate exactly how many marks you need in every subject.</p>
+            </div>
         </div>
     </div>
 

@@ -4,174 +4,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gurukul AI - Dashboard</title>
+    <title>Dashboard - Gurukul AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        /* --- CSS VARIABLES & RESET --- */
-        :root {
-            --primary: #4e54c8;
-            --secondary: #8f94fb;
-            --accent: #ff6b6b;
-            --success: #00b894;
-            --bg-dark: #1a1a2e;
-            --bg-panel: #16213e;
-            --bg-card: #242444;
-            --text-main: #e0e0e0;
-            --text-muted: #a0a0a0;
-            --sidebar-width: 260px;
-        }
-        * { box-sizing: border-box; }
-        body {
-            margin: 0; font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg-dark); color: var(--text-main);
-            display: flex; height: 100vh; overflow: hidden;
-        }
-
-        /* --- SIDEBAR --- */
-        .sidebar {
-            width: var(--sidebar-width); background-color: #12122c;
-            padding: 20px; display: flex; flex-direction: column;
-            border-right: 1px solid #333;
-        }
-        .brand {
-            font-size: 1.6rem; font-weight: bold; margin-bottom: 40px;
-            color: var(--secondary); display: flex; align-items: center; gap: 10px;
-        }
-        .menu-item {
-            padding: 14px 15px; margin-bottom: 8px; border-radius: 10px;
-            color: var(--text-muted); cursor: pointer; transition: 0.3s;
-            display: flex; align-items: center; gap: 15px; font-size: 0.95rem;
-            text-decoration: none;
-        }
-        .menu-item:hover, .menu-item.active {
-            background-color: rgba(78, 84, 200, 0.2); color: var(--secondary);
-        }
-
-        /* --- MAIN CONTENT --- */
-        .main-content {
-            flex: 1; padding: 30px; overflow-y: auto;
-        }
-        .header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
-        }
-        .user-pill {
-            background: var(--bg-card); padding: 8px 15px; border-radius: 30px;
-            display: flex; align-items: center; gap: 10px; cursor: pointer;
-        }
-        
-        /* --- VIEW SECTIONS --- */
-        .view-section { display: none; animation: fadeIn 0.4s; }
-        .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- GRID & CARDS --- */
-        .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 25px; }
-        .card {
-            background: var(--bg-card); border-radius: 16px; padding: 25px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-        .span-8 { grid-column: span 8; }
-        .span-4 { grid-column: span 4; }
-        .span-12 { grid-column: span 12; }
-        .card h3 { margin-top: 0; color: var(--text-main); font-size: 1.1rem; margin-bottom: 20px; }
-
-        /* --- CONSTRUCTION STATE --- */
-        .construction-box {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 60px; text-align: center; height: 100%;
-        }
-        .construction-box i { font-size: 4rem; color: var(--secondary); margin-bottom: 20px; opacity: 0.8; }
-        .construction-box h2 { margin: 0 0 10px 0; }
-        .construction-box p { color: var(--text-muted); max-width: 400px; line-height: 1.5; }
-
-    </style>
+    <link rel="stylesheet" href="{% static 'home/style.css' %}">
 </head>
 <body>
 
     <nav class="sidebar">
-        <div class="brand"><i class="fa-solid fa-brain"></i> Gurukul AI</div>
+        <div class="brand">
+            <i class="fa-solid fa-brain" style="color: var(--primary);"></i> Gurukul
+        </div>
         
         <a href="{% url 'dashboard' %}" class="menu-item active">
             <i class="fa-solid fa-house"></i> Dashboard
         </a>
-
         <a href="{% url 'attendance' %}" class="menu-item">
-            <i class="fa-solid fa-calendar-check"></i> Attendance Tracker
+            <i class="fa-solid fa-calendar-check"></i> Attendance
         </a>
+        
+        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes</div>
+        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-clipboard-question"></i> Quizzes</div>
+        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-chart-line"></i> CGPA</div>
 
-        <div class="menu-item" onclick="switchView('ai-notes', this)">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes & Flashcards
-        </div>
-        <div class="menu-item" onclick="switchView('quiz', this)">
-            <i class="fa-solid fa-clipboard-question"></i> Daily Quizzes
-        </div>
-        <div class="menu-item" onclick="switchView('friends', this)">
-            <i class="fa-solid fa-user-group"></i> Study Friends
-        </div>
-        <div class="menu-item" onclick="switchView('cgpa', this)">
-            <i class="fa-solid fa-chart-line"></i> CGPA Planner
-        </div>
-
-        <form action="{% url 'logout' %}" method="post" style="margin-top: auto; width: 100%;">
+        <form action="{% url 'logout' %}" method="post" style="margin-top: auto;">
             {% csrf_token %}
-            <button type="submit" class="menu-item" style="background: none; border: none; width: 100%; text-align: left; font-family: inherit; font-size: 0.95rem; color: var(--accent); padding: 14px 15px; cursor: pointer;">
+            <button type="submit" class="menu-item" style="background: none; border: none; width: 100%; cursor: pointer; color: var(--accent);">
                 <i class="fa-solid fa-power-off"></i> Logout
             </button>
         </form>
     </nav>
 
     <main class="main-content">
-        <header class="header">
+        
+        <div class="header">
             <div>
-                <h2 style="margin:0;">Hello, {{ user.username|title }} 👋</h2>
-                <p style="margin:5px 0 0 0; color: var(--text-muted);">Let's get that {{ profile.target_cgpa }} CGPA today.</p>
+                <h1 style="font-size: 1.8rem; font-weight: 600;">Good Morning, {{ user.username|title }}</h1>
+                <p style="color: var(--text-muted);">Here is your daily overview.</p>
             </div>
             <div class="user-pill">
-                <i class="fa-solid fa-user-circle"></i> {{ user.username|title }}
+                <i class="fa-regular fa-user"></i> Student
             </div>
-        </header>
+        </div>
 
-        <div id="dashboard" class="view-section active">
-            <div class="grid">
-                <div class="card span-8" style="border-left: 5px solid var(--accent);">
-                    <h3><i class="fa-solid fa-thumbtack"></i> Virtual Softboard</h3>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px;">
-                        <span>📝 <strong>Partial Differentiation Test</strong></span>
-                        <span style="color:var(--accent);">Tomorrow, 10 AM</span>
+        <div class="bento-grid">
+            
+            <div class="session-card" style="grid-column: span 2; min-height: 200px; background: linear-gradient(145deg, rgba(30,41,59,0.7), rgba(99,102,241,0.1));">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <h3 style="margin-bottom: 5px;">Attendance Tracker</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Track your daily classes and labs.</p>
+                    </div>
+                    <div style="background: rgba(99,102,241,0.2); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-calendar-check" style="color: var(--primary);"></i>
                     </div>
                 </div>
-
-                <div class="card span-4" style="text-align:center;">
-                    <h3>Attendance Health</h3>
-                    <div style="font-size:2.5rem; font-weight:bold; color:var(--success); margin-bottom:10px;">{{ profile.attendance_percentage }}%</div>
-                    <a href="{% url 'attendance' %}" style="color: var(--secondary); text-decoration: none; font-size: 0.9rem;">View Details &rarr;</a>
+                
+                <div style="margin-top: auto;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <div style="font-size: 2.5rem; font-weight: 700;">{{ profile.attendance_percentage }}%</div>
+                        <div style="color: {% if profile.attendance_percentage >= 75 %}var(--success){% else %}var(--accent){% endif %}; font-weight: 500;">
+                            {% if profile.attendance_percentage >= 75 %}Safe Zone{% else %}Critical Warning{% endif %}
+                        </div>
+                    </div>
+                    <a href="{% url 'attendance' %}" class="btn-glass btn-primary" style="display: inline-block;">View Full Schedule</a>
                 </div>
             </div>
-        </div>
 
-        <div id="ai-notes" class="view-section">
-            <div class="card" style="height: 60vh;">
-                <div class="construction-box">
-                    <i class="fa-solid fa-robot"></i>
-                    <h2>AI Assistant is Sleeping</h2>
-                    <p>Our AI is currently learning how to summarize your notes better. Feature under construction.</p>
+            <div class="session-card">
+                <div style="margin-bottom: 15px;">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 1.5rem; color: var(--secondary);"></i>
                 </div>
+                <h3 style="margin-bottom: 5px;">AI Notes</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Upload PDFs and generate instant summaries.</p>
+                <button class="btn-glass" style="width: 100%; opacity: 0.7;">Coming Soon</button>
             </div>
-        </div>
-        
-        </main>
 
-    <script>
-        function switchView(viewId, element) {
-            // Only switch views for the remaining SPA sections (AI Notes, Quiz, etc)
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            const target = document.getElementById(viewId);
-            if(target) target.classList.add('active');
-            
-            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-        }
-    </script>
+            <div class="session-card">
+                <div style="margin-bottom: 15px;">
+                    <i class="fa-solid fa-clipboard-question" style="font-size: 1.5rem; color: var(--accent);"></i>
+                </div>
+                <h3 style="margin-bottom: 5px;">Daily Quiz</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Test your knowledge on recent topics.</p>
+                <button class="btn-glass" style="width: 100%; opacity: 0.7;">Coming Soon</button>
+            </div>
+
+             <div class="session-card" style="grid-column: span 2;">
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                         <h3 style="margin-bottom: 5px;">CGPA Planner</h3>
+                         <p style="color: var(--text-muted); font-size: 0.9rem;">Target: {{ profile.target_cgpa }} CGPA</p>
+                    </div>
+                    <i class="fa-solid fa-chart-line" style="font-size: 1.5rem; color: var(--success);"></i>
+                </div>
+                <div style="margin-top: 20px; background: rgba(255,255,255,0.05); height: 10px; border-radius: 5px; overflow: hidden;">
+                    <div style="width: 65%; height: 100%; background: var(--success);"></div>
+                </div>
+                <p style="margin-top: 10px; font-size: 0.8rem; color: var(--text-muted);">You are on track to reach your goal.</p>
+            </div>
+
+        </div>
+
+    </main>
+
 </body>
 </html>

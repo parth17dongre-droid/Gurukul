@@ -1,123 +1,251 @@
+/* =========================================
+   1. THEME VARIABLES (MODERN AI PALETTE)
+   ========================================= */
+:root {
+    /* The AI Palette */
+    --primary: #6366f1;       /* Indigo */
+    --primary-glow: rgba(99, 102, 241, 0.4);
+    --secondary: #a855f7;     /* Purple */
+    --accent: #ec4899;        /* Pink/Red for alerts */
+    --success: #10b981;       /* Emerald Green */
+    
+    /* Backgrounds */
+    --bg-body: #0f172a;       /* Deep Slate */
+    --bg-glass: rgba(30, 41, 59, 0.7); /* Translucent */
+    --bg-card-hover: rgba(51, 65, 85, 0.6);
+    --border-glass: rgba(255, 255, 255, 0.08);
+    
+    /* Font */
+    --font-main: 'Inter', sans-serif;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+
+    /* Dimensions */
+    --sidebar-width: 280px;
+}
+
+/* =========================================
+   2. GLOBAL RESET & BODY
+   ========================================= */
+* { box_sizing: border-box; margin: 0; padding: 0; }
+
 body {
-    /* Using a vibrant mesh gradient for the background */
-    background: radial-gradient(circle at top left, #2b1055, #000000);
-    color: #ffffff;
-    font-family: 'Poppins', 'Segoe UI', sans-serif; /* Poppins feels more modern/vibrant */
+    background-color: var(--bg-body);
+    /* The subtle orb glow background */
+    background-image:
+        radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.15), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.15), transparent 25%);
+    background-attachment: fixed; /* Keeps glow in place while scrolling */
+    color: var(--text-main);
+    font-family: var(--font-main);
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
-.container {
-    /* Glassmorphism effect: semi-transparent with a blur */
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    padding: 2.5rem;
+a { text-decoration: none; color: inherit; }
+
+/* =========================================
+   3. GLASS COMPONENTS (The Core Design)
+   ========================================= */
+/* The Standard Glass Card */
+.card, .glass-panel, .sidebar {
+    background: var(--bg-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-glass);
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-    text-align: center;
-    max-width: 400px;
-    width: 90%;
 }
 
-h1 {
-    /* Gradient text for maximum vibrancy */
-    background: linear-gradient(to right, #00dbde, #fc00ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    letter-spacing: -1px;
+/* Bento Grid Wrapper */
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
 }
 
-button {
-    /* Electric gradient button */
-    background: linear-gradient(45deg, #fc00ff, #00dbde);
-    color: white;
-    font-weight: bold;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 50px; /* Pill shape is more modern */
-    cursor: pointer;
-    font-size: 1rem;
-    margin-top: 20px;
-    transition: transform 0.2s, box-shadow 0.2s;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(0, 219, 222, 0.6);
-}
-
-button:active {
-    transform: scale(0.98);
-}
-/* --- ATTENDANCE PAGE STYLES (Add to bottom of style.css) --- */
-
-/* 1. Upload Box */
-.upload-container {
-    border: 2px dashed rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
+/* =========================================
+   4. SIDEBAR (Fixed Glass Pane)
+   ========================================= */
+.sidebar {
+    width: var(--sidebar-width);
+    height: 95vh;
+    position: fixed;
+    top: 2.5vh;
+    left: 20px;
+    padding: 30px 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 60vh;
-    background: rgba(255, 255, 255, 0.02);
-    transition: 0.3s;
-}
-.upload-container:hover {
-    border-color: var(--secondary);
-    background: rgba(255, 255, 255, 0.05);
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
-/* 2. Session Cards (The list of today's classes) */
-.session-card {
-    background: var(--bg-card);
-    padding: 20px;
-    border-radius: 15px;
+.brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 50px;
+    background: linear-gradient(to right, var(--text-main), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.menu-item {
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.menu-item:hover, .menu-item.active {
+    background: rgba(99, 102, 241, 0.1); /* Low opacity primary */
+    color: var(--text-main);
+    border-color: rgba(99, 102, 241, 0.2);
+    box-shadow: 0 0 15px var(--primary-glow);
+}
+
+/* =========================================
+   5. MAIN CONTENT AREA
+   ========================================= */
+.main-content {
+    margin-left: calc(var(--sidebar-width) + 40px); /* Push content right */
+    padding: 40px;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
-    border-left: 5px solid var(--secondary); /* Default color */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin-bottom: 40px;
 }
 
-/* 3. Action Buttons (Present/Absent) */
-.btn-action {
-    border: none;
-    padding: 8px 15px;
+.user-pill {
+    background: rgba(255,255,255,0.05);
+    padding: 8px 16px;
+    border-radius: 50px;
+    border: 1px solid var(--border-glass);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* =========================================
+   6. ATTENDANCE SPECIFIC (Bento Style)
+   ========================================= */
+   
+/* Session Card (Bento Item) */
+.session-card {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 180px;
+    transition: transform 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.session-card:hover {
+    transform: translateY(-5px);
+    background: var(--bg-card-hover);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Status Indicator Line */
+.status-line {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 4px;
+}
+
+.status-present { background: var(--success); box-shadow: 0 0 10px var(--success); }
+.status-absent { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+.status-pending { background: var(--text-muted); opacity: 0.3; }
+
+/* Buttons & Actions */
+.btn-glass {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-glass);
+    color: var(--text-main);
+    padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
-    font-weight: bold;
-    font-family: inherit;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: 0.2s;
-    margin-left: 5px;
+    transition: 0.3s;
+    font-family: var(--font-main);
+    font-weight: 500;
 }
-.btn-present {
-    background: rgba(0, 184, 148, 0.1);
-    color: var(--success);
-    border: 1px solid var(--success);
+.btn-glass:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--text-main);
 }
-.btn-present:hover { background: var(--success); color: white; }
 
-.btn-absent {
-    background: rgba(255, 107, 107, 0.1);
-    color: var(--accent);
-    border: 1px solid var(--accent);
+.btn-primary {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 0 20px var(--primary-glow);
+    border: none;
 }
-.btn-absent:hover { background: var(--accent); color: white; }
+.btn-primary:hover {
+    background: #4f46e5;
+}
 
-/* 4. Stats Table */
-.stats-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-.stats-table th { text-align: left; color: var(--text-muted); padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.stats-table td { padding: 15px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-main); }
+/* Reset Box (Bento Wide) */
+.reset-box {
+    background: rgba(236, 72, 153, 0.05); /* Very faint pink */
+    border: 1px dashed var(--accent);
+    padding: 20px;
+    border-radius: 16px;
+    text-align: center;
+    margin: 30px 0;
+}
+
+/* =========================================
+   7. TABLE STYLES
+   ========================================= */
+.glass-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.glass-table th {
+    text-align: left;
+    padding: 15px;
+    color: var(--text-muted);
+    font-weight: 500;
+    border-bottom: 1px solid var(--border-glass);
+}
+.glass-table td {
+    padding: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+}
+
+/* =========================================
+   8. FORMS & INPUTS
+   ========================================= */
+input[type="text"], input[type="file"] {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--border-glass);
+    padding: 12px;
+    border-radius: 8px;
+    color: white;
+    width: 100%;
+    outline: none;
+    font-family: var(--font-main);
+}
+input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 10px var(--primary-glow);
+}

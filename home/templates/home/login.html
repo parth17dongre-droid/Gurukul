@@ -4,65 +4,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Gurukul</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Login - Gurukul AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'home/style.css' %}">
-    
-    <style>
-        /* Specific styles for the login form inputs */
-        .form-input {
-            width: 100%;
-            padding: 12px 15px;
-            margin: 10px 0;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            outline: none;
-            box-sizing: border-box;
-            transition: 0.3s;
-        }
-        .form-input::placeholder { color: rgba(255, 255, 255, 0.6); }
-        .form-input:focus {
-            border-color: #00dbde;
-            background: rgba(255, 255, 255, 0.15);
-        }
-    </style>
 </head>
-<body>
+<body style="align-items: center; justify-content: center;">
 
-    <div class="container">
-        <h1>Student Login</h1>
+    <div class="card" style="width: 100%; max-width: 400px; padding: 40px; text-align: center;">
         
-        {% if form.errors %}
-            <div style="background-color: rgba(255, 77, 77, 0.2); border: 1px solid #ff4d4d; color: #ffcccc; padding: 10px; border-radius: 10px; margin-bottom: 20px;">
-                <p style="margin: 0;"><strong>Error:</strong> Invalid username or password.</p>
-            </div>
-        {% endif %}
-        
-        <form method="post">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <input class="form-input" type="text" name="username" placeholder="Username" required>
-            </div>
-            
-            <div class="form-group">
-                <input class="form-input" type="password" name="password" placeholder="Password" required>
-            </div>
-
-            <button type="submit" style="width: 100%; margin-top: 10px;">Enter Dashboard</button>
-        </form>
-
-        <div style="margin-top: 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-            <p style="color: #a0a0a0; font-size: 0.9rem; margin: 0;">
-                Don't have an account? 
-                <a href="{% url 'signup' %}" style="color: #00dbde; text-decoration: none; font-weight: bold; transition: 0.3s;">Sign Up Here</a>
-            </p>
+        <div style="margin-bottom: 30px;">
+            <i class="fa-solid fa-brain" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
+            <h2 style="font-weight: 600;">Welcome Back</h2>
+            <p style="color: var(--text-muted);">Enter your credentials to access your workspace.</p>
         </div>
 
+        <form method="post" style="text-align: left;">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Username</label>
+                {{ form.username }}
+                </div>
+            
+            <div style="margin-bottom: 25px;">
+                <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; display: block;">Password</label>
+                {{ form.password }}
+            </div>
+
+            <button type="submit" class="btn-glass btn-primary" style="width: 100%; justify-content: center;">Sign In</button>
+        </form>
+
+        <p style="margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
+            Don't have an account? <a href="{% url 'signup' %}" style="color: var(--primary);">Sign up</a>
+        </p>
     </div>
+
+    <style>
+        /* Forces Django form inputs to look like our glass inputs */
+        input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            color: white;
+            outline: none;
+        }
+        input:focus {
+            border-color: var(--primary);
+        }
+    </style>
 
 </body>
 </html>

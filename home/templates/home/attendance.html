@@ -4,61 +4,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Tracker - Gurukul</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Gurukul AI - Attendance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'home/style.css' %}">
-    
-    <style>
-        .main-content {
-            padding-bottom: 100px;
-        }
-
-        /* Middle of Page Reset Section */
-        .reset-section {
-            margin: 40px 0; /* Space above and below */
-            padding: 20px;
-            background: rgba(255, 77, 77, 0.05);
-            border: 1px dashed var(--accent);
-            border-radius: 15px;
-            text-align: center; /* Center everything */
-        }
-
-        .reset-btn {
-            background: var(--accent); 
-            color: white; 
-            padding: 12px 30px; 
-            border-radius: 50px; 
-            font-size: 1rem; 
-            border: none;
-            cursor: pointer; 
-            font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-            box-shadow: 0 4px 15px rgba(255, 77, 77, 0.3);
-            transition: 0.2s;
-        }
-        .reset-btn:hover {
-            transform: scale(1.05);
-        }
-    </style>
 </head>
 <body>
 
     <nav class="sidebar">
-        <div class="brand"><i class="fa-solid fa-brain"></i> Gurukul AI</div>
-        <a href="{% url 'dashboard' %}" class="menu-item"><i class="fa-solid fa-house"></i> Dashboard</a>
-        <a href="{% url 'attendance' %}" class="menu-item active"><i class="fa-solid fa-calendar-check"></i> Attendance Tracker</a>
+        <div class="brand">
+            <i class="fa-solid fa-brain" style="color: var(--primary);"></i> Gurukul
+        </div>
+        
+        <a href="{% url 'dashboard' %}" class="menu-item">
+            <i class="fa-solid fa-house"></i> Dashboard
+        </a>
+        <a href="{% url 'attendance' %}" class="menu-item active">
+            <i class="fa-solid fa-calendar-check"></i> Attendance
+        </a>
+        
         <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes</div>
-        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-clipboard-question"></i> Daily Quizzes</div>
-        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-user-group"></i> Study Friends</div>
-        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-chart-line"></i> CGPA Planner</div>
+        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-clipboard-question"></i> Quizzes</div>
+        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-chart-line"></i> CGPA</div>
 
-        <form action="{% url 'logout' %}" method="post" style="margin-top: auto; width: 100%;">
+        <form action="{% url 'logout' %}" method="post" style="margin-top: auto;">
             {% csrf_token %}
-            <button type="submit" class="menu-item" style="background: none; border: none; width: 100%; text-align: left; font-family: inherit; font-size: 0.95rem; color: var(--accent); padding: 14px 15px; cursor: pointer;">
+            <button type="submit" class="menu-item" style="background: none; border: none; width: 100%; cursor: pointer; color: var(--accent);">
                 <i class="fa-solid fa-power-off"></i> Logout
             </button>
         </form>
@@ -68,98 +39,130 @@
         
         <div class="header">
             <div>
-                <h2 style="margin:0;">Attendance Tracker</h2>
-                <p style="margin:5px 0 0 0; color: var(--text-muted);">Manage your daily classes.</p>
+                <h1 style="font-size: 1.8rem; font-weight: 600;">Attendance Tracker</h1>
+                <p style="color: var(--text-muted);">{{ today_date }}</p>
             </div>
             <div class="user-pill">
-                <i class="fa-solid fa-user-circle"></i> {{ user.username|title }}
+                <i class="fa-regular fa-user"></i> {{ user.username|title }}
             </div>
         </div>
 
         {% if not has_timetable %}
-            <div class="upload-container">
-                <i class="fa-solid fa-file-excel" style="font-size: 4rem; color: var(--success); margin-bottom: 20px;"></i>
-                <h2>Upload Excel Schedule</h2>
-                <p style="color: var(--text-muted); margin-bottom: 30px;">
-                    Upload your timetable. Make sure to specify your batch (e.g., B2).
+            <div class="glass-panel" style="max-width: 500px; margin: 50px auto; padding: 40px; text-align: center;">
+                <div style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.5rem; color: var(--success);"></i>
+                </div>
+                <h2 style="margin-bottom: 10px;">Import Timetable</h2>
+                <p style="color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem;">
+                    Upload your college Excel sheet. Our AI will extract your batch schedule automatically.
                 </p>
-                <form method="post" enctype="multipart/form-data" style="text-align: center; width: 100%; max-width: 400px;">
+
+                <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <div style="margin-bottom: 15px;">{{ form.batch }}</div>
-                    <div style="margin-bottom: 20px;">{{ form.file }}</div>
-                    <button type="submit" name="upload_file" style="background: var(--primary); color: white; border: none; padding: 12px 30px; border-radius: 50px; font-weight: bold; cursor: pointer;">
-                        Generate Schedule 🚀
+                    <div style="margin-bottom: 15px; text-align: left;">
+                        <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">YOUR BATCH (e.g. B2)</label>
+                        {{ form.batch }}
+                    </div>
+                    <div style="margin-bottom: 25px;">
+                        {{ form.file }}
+                    </div>
+                    <button type="submit" name="upload_file" class="btn-glass btn-primary" style="width: 100%;">
+                        Generate Tracker
                     </button>
                 </form>
             </div>
 
         {% else %}
+            <h3 style="margin-bottom: 20px; font-weight: 500; color: var(--text-muted);">Today's Schedule</h3>
             
-            <h3 style="margin-bottom: 20px;">Today's Classes <span style="font-weight: normal; font-size: 0.9rem; color: var(--text-muted)">({{ today_date }})</span></h3>
-            
-            <div class="sessions-list">
+            <div class="bento-grid">
                 {% if todays_sessions %}
                     {% for session in todays_sessions %}
-                        <div class="session-card" style="border-left-color: {% if session.status == 'Present' %}var(--success){% elif session.status == 'Absent' %}var(--accent){% else %}var(--secondary){% endif %};">
-                            <div>
-                                <h3 style="margin: 0; font-size: 1.1rem;">{{ session.subject.name }}</h3>
-                                <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 0.85rem;">Status: <strong style="color: white;">{{ session.status }}</strong></p>
-                            </div>
-                            <div>
-                                {% if session.status == 'Pending' %}
-                                    <form method="post" style="display: inline;">{% csrf_token %}<input type="hidden" name="session_id" value="{{ session.id }}"><input type="hidden" name="status" value="Present"><button type="submit" class="btn-action btn-present"><i class="fa-solid fa-check"></i> Present</button></form>
-                                    <form method="post" style="display: inline;">{% csrf_token %}<input type="hidden" name="session_id" value="{{ session.id }}"><input type="hidden" name="status" value="Absent"><button type="submit" class="btn-action btn-absent"><i class="fa-solid fa-xmark"></i> Absent</button></form>
-                                {% else %}
-                                    <button class="btn-action" style="cursor: default; opacity: 0.7; background: rgba(255,255,255,0.1); color: white;">
-                                        {% if session.status == 'Present' %}<i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Marked Present{% else %}<i class="fa-solid fa-circle-xmark" style="color: var(--accent);"></i> Marked Absent{% endif %}
-                                    </button>
-                                {% endif %}
-                            </div>
+                    <div class="session-card">
+                        <div class="status-line {% if session.status == 'Present' %}status-present{% elif session.status == 'Absent' %}status-absent{% else %}status-pending{% endif %}"></div>
+
+                        <div style="padding-left: 10px;">
+                            <h3 style="font-size: 1.2rem; margin-bottom: 5px;">{{ session.subject.name }}</h3>
+                            <span style="font-size: 0.85rem; padding: 4px 10px; border-radius: 20px; background: rgba(255,255,255,0.05); color: var(--text-muted);">
+                                {{ session.status }}
+                            </span>
                         </div>
+
+                        <div style="padding-left: 10px; margin-top: 20px;">
+                            {% if session.status == 'Pending' %}
+                                <div style="display: flex; gap: 10px;">
+                                    <form method="post" style="flex: 1;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="session_id" value="{{ session.id }}">
+                                        <input type="hidden" name="status" value="Present">
+                                        <button class="btn-glass" style="width: 100%; color: var(--success); border-color: rgba(16, 185, 129, 0.3);">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                    </form>
+                                    <form method="post" style="flex: 1;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="session_id" value="{{ session.id }}">
+                                        <input type="hidden" name="status" value="Absent">
+                                        <button class="btn-glass" style="width: 100%; color: var(--accent); border-color: rgba(236, 72, 153, 0.3);">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <div style="color: var(--text-muted); font-size: 0.9rem;">
+                                    <i class="fa-solid fa-lock"></i> Marked
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
                     {% endfor %}
                 {% else %}
-                    <div style="text-align: center; padding: 30px; border: 1px dashed rgba(255,255,255,0.2); border-radius: 10px;">
+                    <div class="glass-panel" style="grid-column: 1 / -1; padding: 40px; text-align: center; border-style: dashed;">
                         <p style="color: var(--text-muted);">No classes scheduled for today.</p>
                     </div>
                 {% endif %}
             </div>
 
-            <div class="reset-section">
-                <h3 style="color: var(--accent); margin-top: 0;">Need to change your schedule?</h3>
-                <p style="color: var(--text-muted); margin-bottom: 15px;">
-                    Seeing "Lunch" or missing labs? Reset and re-upload your file.
+            <div class="reset-box">
+                <h4 style="color: var(--accent); margin-bottom: 10px;">Schedule Configuration</h4>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">
+                    Incorrect batch or missing labs? Reset to upload a clean file.
                 </p>
-                <form method="post" onsubmit="return confirm('Are you sure? This will delete all current records.');">
+                <form method="post" onsubmit="return confirm('Resetting will delete all history. Continue?');">
                     {% csrf_token %}
                     <input type="hidden" name="reset_timetable" value="true">
-                    <button type="submit" class="reset-btn">
-                        <i class="fa-solid fa-trash-can"></i> Reset & Re-Upload
+                    <button type="submit" class="btn-glass" style="color: var(--accent); border-color: var(--accent);">
+                        Reset & Re-Upload
                     </button>
                 </form>
             </div>
 
-            <h3 style="margin-top: 40px; margin-bottom: 20px;">Subject Statistics</h3>
-            <div style="background: var(--bg-card); border-radius: 15px; padding: 20px; overflow-x: auto;">
-                <table class="stats-table">
+            <h3 style="margin: 40px 0 20px 0; font-weight: 500; color: var(--text-muted);">Performance Analytics</h3>
+            <div class="glass-panel" style="padding: 0; overflow: hidden;">
+                <table class="glass-table">
                     <thead>
                         <tr>
                             <th>Subject</th>
-                            <th>Attended / Total</th>
-                            <th>Percentage</th>
+                            <th>Progress</th>
+                            <th>%</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for sub in subjects %}
                         <tr>
-                            <td>{{ sub.name }}</td>
-                            <td>{{ sub.lectures_attended }} / {{ sub.total_lectures }}</td>
+                            <td style="font-weight: 500;">{{ sub.name }}</td>
+                            <td style="width: 40%;">
+                                <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                                    <div style="height: 100%; width: {{ sub.attendance_percentage }}%; background: {% if sub.attendance_percentage < 75 %}var(--accent){% else %}var(--success){% endif %};"></div>
+                                </div>
+                            </td>
                             <td>{{ sub.attendance_percentage }}%</td>
                             <td>
                                 {% if sub.attendance_percentage < 75 %}
-                                    <span style="color: var(--accent); font-weight: bold;">Critical</span>
+                                    <span style="color: var(--accent); font-size: 0.85rem;"><i class="fa-solid fa-circle-exclamation"></i> Critical</span>
                                 {% else %}
-                                    <span style="color: var(--success); font-weight: bold;">Safe</span>
+                                    <span style="color: var(--success); font-size: 0.85rem;">Good</span>
                                 {% endif %}
                             </td>
                         </tr>
@@ -167,8 +170,8 @@
                     </tbody>
                 </table>
             </div>
-
         {% endif %}
     </main>
+
 </body>
 </html>
