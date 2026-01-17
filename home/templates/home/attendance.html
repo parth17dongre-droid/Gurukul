@@ -59,6 +59,13 @@
 
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
+                    
+                    {% if error %}
+                    <div style="background: rgba(236, 72, 153, 0.1); border: 1px solid var(--accent); color: var(--accent); padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> {{ error }}
+                    </div>
+                    {% endif %}
+
                     <div style="margin-bottom: 15px; text-align: left;">
                         <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">YOUR BATCH (e.g. B2)</label>
                         {{ form.batch }}
@@ -110,7 +117,11 @@
                                 </div>
                             {% else %}
                                 <div style="color: var(--text-muted); font-size: 0.9rem;">
-                                    <i class="fa-solid fa-lock"></i> Marked
+                                    {% if session.status == 'Present' %}
+                                        <i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Marked Present
+                                    {% else %}
+                                        <i class="fa-solid fa-circle-xmark" style="color: var(--accent);"></i> Marked Absent
+                                    {% endif %}
                                 </div>
                             {% endif %}
                         </div>
@@ -152,14 +163,29 @@
                         {% for sub in subjects %}
                         <tr>
                             <td style="font-weight: 500;">{{ sub.name }}</td>
+                            
                             <td style="width: 40%;">
                                 <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
-                                    <div style="height: 100%; width: {{ sub.attendance_percentage }}%; background: {% if sub.attendance_percentage < 75 %}var(--accent){% else %}var(--success){% endif %};"></div>
+                                    {% if sub.total_lectures == 0 %}
+                                        <div style="height: 100%; width: 100%; background: var(--text-muted); opacity: 0.2;"></div>
+                                    {% else %}
+                                        <div style="height: 100%; width: {{ sub.attendance_percentage }}%; background: {% if sub.attendance_percentage < 75 %}var(--accent){% else %}var(--success){% endif %};"></div>
+                                    {% endif %}
                                 </div>
                             </td>
-                            <td>{{ sub.attendance_percentage }}%</td>
+                            
                             <td>
-                                {% if sub.attendance_percentage < 75 %}
+                                {% if sub.total_lectures == 0 %}
+                                    <span style="color: var(--text-muted); font-size: 0.9rem;">0%</span>
+                                {% else %}
+                                    {{ sub.attendance_percentage }}%
+                                {% endif %}
+                            </td>
+                            
+                            <td>
+                                {% if sub.total_lectures == 0 %}
+                                    <span style="color: var(--text-muted); font-size: 0.85rem;">---</span>
+                                {% elif sub.attendance_percentage < 75 %}
                                     <span style="color: var(--accent); font-size: 0.85rem;"><i class="fa-solid fa-circle-exclamation"></i> Critical</span>
                                 {% else %}
                                     <span style="color: var(--success); font-size: 0.85rem;">Good</span>
