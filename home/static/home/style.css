@@ -62,6 +62,8 @@ a { text-decoration: none; color: inherit; }
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
+    /* REQUIRED FOR 3D EFFECT: Creates the 3D depth space */
+    perspective: 1000px;
 }
 
 /* =========================================
@@ -141,7 +143,7 @@ a { text-decoration: none; color: inherit; }
 }
 
 /* =========================================
-   6. ATTENDANCE SPECIFIC (Bento Style)
+   6. ATTENDANCE & WIDGETS (Interactive 3D Style)
    ========================================= */
    
 /* Session Card (Bento Item) */
@@ -154,15 +156,50 @@ a { text-decoration: none; color: inherit; }
     flex-direction: column;
     justify-content: space-between;
     min-height: 180px;
-    transition: transform 0.2s, background 0.2s;
     position: relative;
     overflow: hidden;
+
+    /* 3D Settings */
+    transform-style: preserve-3d;
+    will-change: transform;
+    
+    /* IMPORTANT: Short transition for transform allows the mouse tracking to feel responsive.
+       Longer transition for colors/shadows for smoothness. */
+    transition: transform 0.1s ease-out, 
+                box-shadow 0.3s ease, 
+                background 0.3s ease;
 }
 
+/* Hover State */
 .session-card:hover {
-    transform: translateY(-5px);
+    /* We DO NOT set transform here anymore because JS handles the angle. */
+    
+    /* Darken bg slightly to indicate depth */
     background: var(--bg-card-hover);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    
+    /* Shadow reduces/tightens to simulate the card being pushed 'into' the screen */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 3D Parallax: Text pops OUT when card tilts */
+/* These elements move independent of the card background */
+.session-card h3, 
+.session-card p, 
+.session-card i, 
+.session-card .btn-glass,
+.session-card .user-pill {
+    transition: transform 0.1s ease-out;
+    transform: translateZ(0px); /* Reset Z */
+}
+
+.session-card:hover h3, 
+.session-card:hover p,
+.session-card:hover i,
+.session-card:hover .btn-glass {
+    /* Lifts the content 30px 'above' the card surface */
+    transform: translateZ(30px); 
+    text-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
 /* Status Indicator Line */
@@ -184,68 +221,4 @@ a { text-decoration: none; color: inherit; }
     padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
-    transition: 0.3s;
-    font-family: var(--font-main);
-    font-weight: 500;
-}
-.btn-glass:hover {
-    background: rgba(255,255,255,0.1);
-    border-color: var(--text-main);
-}
-
-.btn-primary {
-    background: var(--primary);
-    color: white;
-    box-shadow: 0 0 20px var(--primary-glow);
-    border: none;
-}
-.btn-primary:hover {
-    background: #4f46e5;
-}
-
-/* Reset Box (Bento Wide) */
-.reset-box {
-    background: rgba(236, 72, 153, 0.05); /* Very faint pink */
-    border: 1px dashed var(--accent);
-    padding: 20px;
-    border-radius: 16px;
-    text-align: center;
-    margin: 30px 0;
-}
-
-/* =========================================
-   7. TABLE STYLES
-   ========================================= */
-.glass-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-.glass-table th {
-    text-align: left;
-    padding: 15px;
-    color: var(--text-muted);
-    font-weight: 500;
-    border-bottom: 1px solid var(--border-glass);
-}
-.glass-table td {
-    padding: 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.02);
-}
-
-/* =========================================
-   8. FORMS & INPUTS
-   ========================================= */
-input[type="text"], input[type="file"] {
-    background: rgba(0,0,0,0.2);
-    border: 1px solid var(--border-glass);
-    padding: 12px;
-    border-radius: 8px;
-    color: white;
-    width: 100%;
-    outline: none;
-    font-family: var(--font-main);
-}
-input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 10px var(--primary-glow);
-}
+    transition: 0.3s

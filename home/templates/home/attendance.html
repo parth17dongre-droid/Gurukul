@@ -48,7 +48,7 @@
         </div>
 
         {% if not has_timetable %}
-            <div class="glass-panel" style="max-width: 500px; margin: 50px auto; padding: 40px; text-align: center;">
+            <div class="glass-panel session-card" style="max-width: 500px; margin: 50px auto; padding: 40px; text-align: center; display: block;">
                 <div style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
                     <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.5rem; color: var(--success);"></i>
                 </div>
@@ -117,7 +117,7 @@
                     </div>
                     {% endfor %}
                 {% else %}
-                    <div class="glass-panel" style="grid-column: 1 / -1; padding: 40px; text-align: center; border-style: dashed;">
+                    <div class="glass-panel session-card" style="grid-column: 1 / -1; padding: 40px; text-align: center; border-style: dashed; display: block;">
                         <p style="color: var(--text-muted);">No classes scheduled for today.</p>
                     </div>
                 {% endif %}
@@ -172,6 +172,34 @@
             </div>
         {% endif %}
     </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Target both session-cards and panels marked with session-card class
+            const cards = document.querySelectorAll(".session-card");
+
+            cards.forEach((card) => {
+                card.addEventListener("mousemove", (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+
+                    // Sensitivity 35 (Subtle/Smooth)
+                    const sensitivity = 35; 
+
+                    const rotateX = (-y / sensitivity).toFixed(2);
+                    const rotateY = (x / sensitivity).toFixed(2);
+
+                    // Ensure perspective is maintained
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(0.98)`;
+                });
+
+                card.addEventListener("mouseleave", () => {
+                    card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)";
+                });
+            });
+        });
+    </script>
 
 </body>
 </html>
