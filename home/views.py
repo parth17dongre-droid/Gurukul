@@ -72,7 +72,7 @@ def dashboard(request):
 @login_required(login_url='login')
 def attendance(request):
     profile, created = StudentProfile.objects.get_or_create(user=request.user)
-    today = datetime.date.today()
+    today = datetime.date(2026,1,19)
 
     # Logic A: Handle "Reset"
     if request.method == 'POST' and 'reset_timetable' in request.POST:
@@ -142,3 +142,4 @@ def attendance(request):
         'today_date': today.strftime("%A, %d %B %Y"),
     }
     return render(request, 'home/attendance.html', context)
+    

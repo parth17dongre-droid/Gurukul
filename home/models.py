@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# 1. Profile (You already have this)
+# 1. Profile (Keeps your original fields)
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     college_name = models.CharField(max_length=100, default="SIT Pune")
@@ -11,20 +11,30 @@ class StudentProfile(models.Model):
     target_cgpa = models.FloatField(default=9.0)
     
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username}'s Profile"
 
-# 2. Subject (e.g., "Data Structures", "Calculus")
+# 2. Subject (Keeps your original fields + Adds Stats Logic)
 class Subject(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=20, blank=True)
     is_lab = models.BooleanField(default=False)
     
+    # --- NEW FIELDS FOR STATS (Needed for the tracker) ---
+    total_lectures = models.IntegerField(default=0)
+    lectures_attended = models.IntegerField(default=0)
+    
+    # --- MATH HELPER (Calculates % on the fly) ---
+    @property
+    def attendance_percentage(self):
+        if self.total_lectures == 0:
+            return 0.0
+        return round((self.lectures_attended / self.total_lectures) * 100, 1)
+
     def __str__(self):
         return self.name
 
-# 3. Attendance Session (A specific class on a specific date)
-# This replaces your 'sessions' table in the old code
+# 3. Attendance Session (No changes needed, just standardized)
 class AttendanceSession(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
@@ -36,7 +46,7 @@ class AttendanceSession(models.Model):
     )
 
     class Meta:
-        ordering = ['date'] # Sort by date automatically
+        ordering = ['date']
 
     def __str__(self):
         return f"{self.subject.name} on {self.date}"
