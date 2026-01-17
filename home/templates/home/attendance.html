@@ -47,6 +47,35 @@
             </div>
         </div>
 
+        <div class="session-card" style="margin-bottom: 30px; background: linear-gradient(145deg, rgba(30,41,59,0.7), rgba(16, 185, 129, 0.05)); min-height: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="margin-bottom: 5px; font-size: 1.1rem; color: var(--text-main);">Overall Attendance</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Aggregated from all subjects</p>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 2.2rem; font-weight: 700; color: var(--text-main); display: block; line-height: 1;">
+                        {{ user.studentprofile.attendance_percentage }}%
+                    </span>
+                    
+                    <div style="font-weight: 600; font-size: 0.9rem; margin-top: 5px; color: {% if user.studentprofile.attendance_percentage >= 75 %}var(--success){% else %}var(--accent){% endif %};">
+                        {% if user.studentprofile.attendance_percentage >= 75 %}
+                            <i class="fa-solid fa-shield-halved"></i> Safe Zone
+                        {% else %}
+                            <i class="fa-solid fa-circle-exclamation"></i> Critical Warning
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; background: var(--accent); height: 8px; border-radius: 4px; overflow: hidden;">
+                <div style="width: {{ user.studentprofile.attendance_percentage }}%; height: 100%; 
+                            background: var(--success); 
+                            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);">
+                </div>
+            </div>
+        </div>
+
         {% if not has_timetable %}
             <div class="glass-panel session-card" style="max-width: 500px; margin: 50px auto; padding: 40px; text-align: center; display: block;">
                 <div style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
@@ -59,13 +88,6 @@
 
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    
-                    {% if error %}
-                    <div style="background: rgba(236, 72, 153, 0.1); border: 1px solid var(--accent); color: var(--accent); padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem;">
-                        <i class="fa-solid fa-triangle-exclamation"></i> {{ error }}
-                    </div>
-                    {% endif %}
-
                     <div style="margin-bottom: 15px; text-align: left;">
                         <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">YOUR BATCH (e.g. B2)</label>
                         {{ form.batch }}
@@ -149,46 +171,58 @@
             </div>
 
             <h3 style="margin: 40px 0 20px 0; font-weight: 500; color: var(--text-muted);">Performance Analytics</h3>
-            <div class="glass-panel" style="padding: 0; overflow: hidden;">
-                <table class="glass-table">
+            
+            <div class="glass-panel" style="padding: 0; overflow: hidden; width: 100%;">
+                <table class="glass-table" style="width: 100%; table-layout: fixed;">
                     <thead>
                         <tr>
-                            <th>Subject</th>
-                            <th>Progress</th>
-                            <th>%</th>
-                            <th>Status</th>
+                            <th style="width: 30%;">Subject</th>
+                            <th style="width: 40%;">Progress</th>
+                            <th style="width: 15%; text-align: center;">%</th>
+                            <th style="width: 15%; text-align: center;">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for sub in subjects %}
                         <tr>
-                            <td style="font-weight: 500;">{{ sub.name }}</td>
-                            
-                            <td style="width: 40%;">
-                                <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
-                                    {% if sub.total_lectures == 0 %}
-                                        <div style="height: 100%; width: 100%; background: var(--text-muted); opacity: 0.2;"></div>
-                                    {% else %}
-                                        <div style="height: 100%; width: {{ sub.attendance_percentage }}%; background: {% if sub.attendance_percentage < 75 %}var(--accent){% else %}var(--success){% endif %};"></div>
-                                    {% endif %}
-                                </div>
+                            <td style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 15px;">
+                                {{ sub.name }}
                             </td>
                             
-                            <td>
+                            <td style="vertical-align: middle;">
                                 {% if sub.total_lectures == 0 %}
-                                    <span style="color: var(--text-muted); font-size: 0.9rem;">0%</span>
+                                    <div style="height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; width: 100%;">
+                                        <div style="height: 100%; width: 0%;"></div>
+                                    </div>
+                                {% else %}
+                                    <div style="height: 8px; background: var(--accent); border-radius: 4px; overflow: hidden; width: 100%;">
+                                        <div style="height: 100%; width: {{ sub.attendance_percentage }}%; 
+                                                    background: var(--success); 
+                                                    transition: width 0.5s ease;">
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            
+                            <td style="text-align: center; font-weight: 700; color: var(--text-main);">
+                                {% if sub.total_lectures == 0 %}
+                                    <span style="color: var(--text-muted); font-weight: 400;">0%</span>
                                 {% else %}
                                     {{ sub.attendance_percentage }}%
                                 {% endif %}
                             </td>
                             
-                            <td>
+                            <td style="text-align: center;">
                                 {% if sub.total_lectures == 0 %}
-                                    <span style="color: var(--text-muted); font-size: 0.85rem;">---</span>
+                                    <span style="color: var(--text-muted); font-size: 0.85rem;">Null</span>
                                 {% elif sub.attendance_percentage < 75 %}
-                                    <span style="color: var(--accent); font-size: 0.85rem;"><i class="fa-solid fa-circle-exclamation"></i> Critical</span>
+                                    <span style="color: var(--accent); font-size: 0.85rem; font-weight: 500;">
+                                        <i class="fa-solid fa-circle-exclamation"></i> Critical
+                                    </span>
                                 {% else %}
-                                    <span style="color: var(--success); font-size: 0.85rem;">Good</span>
+                                    <span style="color: var(--success); font-size: 0.85rem; font-weight: 500;">
+                                        <i class="fa-solid fa-shield-check"></i> Good
+                                    </span>
                                 {% endif %}
                             </td>
                         </tr>
@@ -201,7 +235,6 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // Target both session-cards and panels marked with session-card class
             const cards = document.querySelectorAll(".session-card");
 
             cards.forEach((card) => {
@@ -209,17 +242,11 @@
                     const rect = card.getBoundingClientRect();
                     const x = e.clientX - rect.left - rect.width / 2;
                     const y = e.clientY - rect.top - rect.height / 2;
-
-                    // Sensitivity 35 (Subtle/Smooth)
                     const sensitivity = 35; 
-
                     const rotateX = (-y / sensitivity).toFixed(2);
                     const rotateY = (x / sensitivity).toFixed(2);
-
-                    // Ensure perspective is maintained
                     card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(0.98)`;
                 });
-
                 card.addEventListener("mouseleave", () => {
                     card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)";
                 });
