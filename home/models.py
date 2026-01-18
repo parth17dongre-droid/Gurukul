@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# 1. Profile (Keeps your original fields)
+# 1. Profile
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     college_name = models.CharField(max_length=100, default="SIT Pune")
@@ -13,18 +13,21 @@ class StudentProfile(models.Model):
     def __str__(self):
         return f"{self.user.username}'s Profile"
 
-# 2. Subject (Keeps your original fields + Adds Stats Logic)
+# 2. Subject (Updated with is_theory)
 class Subject(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=20, blank=True)
     is_lab = models.BooleanField(default=False)
     
-    # --- NEW FIELDS FOR STATS (Needed for the tracker) ---
+    # 🟢 NEW FIELD: Needed for the Library filter
+    is_theory = models.BooleanField(default=True)
+
+    # --- STATS FIELDS ---
     total_lectures = models.IntegerField(default=0)
     lectures_attended = models.IntegerField(default=0)
     
-    # --- MATH HELPER (Calculates % on the fly) ---
+    # --- MATH HELPER ---
     @property
     def attendance_percentage(self):
         if self.total_lectures == 0:
@@ -34,7 +37,7 @@ class Subject(models.Model):
     def __str__(self):
         return self.name
 
-# 3. Attendance Session (No changes needed, just standardized)
+# 3. Attendance Session
 class AttendanceSession(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
@@ -50,3 +53,16 @@ class AttendanceSession(models.Model):
 
     def __str__(self):
         return f"{self.subject.name} on {self.date}"
+
+# 4. AI Note (Linked to Subject)
+class AINote(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # Link to the Subject model (allows folder organization)
+    subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True) 
+    title = models.CharField(max_length=200)
+    content_html = models.TextField()
+    raw_text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.subject.name if self.subject else 'Unsorted'})"

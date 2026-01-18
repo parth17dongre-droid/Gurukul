@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Library - Gurukul</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'home/style.css' %}">
+    
+    <style>
+        /* Folder Cards */
+        .folder-card {
+            min-width: 120px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: 0.3s;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .folder-card:hover { background: rgba(255,255,255,0.1); color: white; border-color: var(--primary); }
+        .folder-card.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .folder-card i { display: block; font-size: 1.5rem; margin-bottom: 8px; }
+
+        /* Note Items */
+        .note-item {
+            display: block;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            transition: 0.2s;
+            border-left: 3px solid transparent;
+            margin-bottom: 10px;
+        }
+        .note-item:hover {
+            background: rgba(255,255,255,0.08);
+            border-left: 3px solid var(--accent);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-brain" style="color: var(--primary);"></i> Gurukul
+        </div>
+        <a href="{% url 'dashboard' %}" class="menu-item"><i class="fa-solid fa-house"></i> Dashboard</a>
+        <a href="{% url 'attendance' %}" class="menu-item"><i class="fa-solid fa-calendar-check"></i> Attendance</a>
+        <a href="{% url 'library' %}" class="menu-item active"><i class="fa-solid fa-folder-open"></i> Library</a>
+        <a href="{% url 'ai_notes' %}" class="menu-item"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes</a>
+        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-clipboard-question"></i> Quizzes</div>
+        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-chart-line"></i> CGPA</div>
+    </nav>
+
+    <main class="main-content">
+        <div class="header">
+            <div>
+                <h1 style="font-size: 1.8rem; font-weight: 600;">📚 My Library</h1>
+                <p style="color: var(--text-muted);">Organize your knowledge.</p>
+            </div>
+            <button class="btn-glass" onclick="document.getElementById('add-sub-form').style.display='block'">
+                <i class="fa-solid fa-folder-plus"></i> New Folder
+            </button>
+        </div>
+
+        <div id="add-sub-form" style="display:none; margin-bottom: 20px;" class="glass-panel">
+            <form action="{% url 'add_subject' %}" method="post" style="display: flex; gap: 10px; padding: 15px;">
+                {% csrf_token %}
+                <input type="text" name="subject_name" style="flex:1; background: transparent; border: 1px solid var(--text-muted); color: white; padding: 10px; border-radius: 5px;" placeholder="Subject Name (e.g. Physics)" required>
+                <button type="submit" class="btn-glass btn-primary">Create</button>
+            </form>
+        </div>
+
+        <div class="glass-panel" style="margin-bottom: 30px; padding: 20px;">
+            <h4 style="margin-bottom: 15px; color: var(--text-main); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Folders</h4>
+            <div style="overflow-x: auto; white-space: nowrap; padding-bottom: 10px;">
+                
+                <a href="{% url 'library' %}" class="folder-card {% if not selected_subject %}active{% endif %}">
+                    <i class="fa-regular fa-folder-open"></i> Unsorted
+                </a>
+
+                {% for sub in subjects %}
+                <a href="?subject_id={{ sub.id }}" class="folder-card {% if selected_subject.id == sub.id %}active{% endif %}">
+                    <i class="fa-solid fa-folder"></i> {{ sub.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="glass-panel">
+            <h4 style="margin-bottom: 20px;">
+                {% if selected_subject %} 
+                    📂 {{ selected_subject.name }} Notes
+                {% else %} 
+                    📂 Unsorted Notes 
+                {% endif %}
+            </h4>
+
+            {% if notes %}
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    {% for note in notes %}
+                    <a href="{% url 'ai_notes' %}?note_id={{ note.id }}" class="note-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 500;"><i class="fa-regular fa-file-lines"></i> {{ note.title }}</span>
+                            <span style="font-size: 0.8rem; opacity: 0.6;">{{ note.created_at|date:"M d" }}</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 40px; opacity: 0.5;">
+                    <i class="fa-solid fa-box-open" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <p>This folder is empty.</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+</body>
+</html>

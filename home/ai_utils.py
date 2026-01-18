@@ -30,7 +30,6 @@ def extract_text_from_pdf(file_obj):
     try:
         reader = PyPDF2.PdfReader(file_obj)
         text = ""
-        # 🟢 UPDATED: Removed the "i > 15" break to read the FULL file
         for page in reader.pages:
             text += page.extract_text() + "\n"
         return text
@@ -52,11 +51,16 @@ def extract_text_from_ppt(file_obj):
         return None
 
 # ==========================================
-# 🧠 GROQ AI GENERATOR
+# 🧠 AI FUNCTIONS
 # ==========================================
+
 def generate_notes(uploaded_file):
+    """
+    Returns a TUPLE: (HTML_Summary, Raw_Text)
+    We need the Raw_Text to perform the 'Deep Dives' later.
+    """
     if not api_key:
-        return "❌ Error: GROQ_API_KEY not found in .env file."
+        return "❌ Error: GROQ_API_KEY not found.", ""
 
     # 1. Extract Text
     filename = uploaded_file.name.lower()
@@ -67,77 +71,91 @@ def generate_notes(uploaded_file):
     elif filename.endswith('.pptx') or filename.endswith('.ppt'):
         text = extract_text_from_ppt(uploaded_file)
     else:
-        return "❌ Error: Unsupported file format. Please upload PDF or PPTX."
+        return "❌ Error: Unsupported file format.", ""
 
     if not text or len(text) < 50:
-        return "❌ Error: Could not extract text. File might be purely images."
+        return "❌ Error: Could not extract text.", ""
 
-    # 🔍 DEBUG: Print the length to the terminal so we KNOW it read everything
-    print(f"🔍 DEBUG: Extracted {len(text)} characters from {filename}")
-
-    # 2. Call Groq API
+    # 2. Call Groq API (Initial Summary)
     try:
         client = Groq(api_key=api_key)
-        
-        # 🟢 UPDATED: Increased limit to 50,000 characters (approx 12k tokens)
-        # This is safe for Llama 3 on Groq and fits huge lectures.
-        truncated_text = text[:50000]
+        truncated_text = text[:50000] # 50k char limit
 
         completion = client.chat.completions.create(
             messages=[
                 {
                     "role": "system",
-                    "content": """
-                    You are a precise academic analyst. 
-                    Your job is to deconstruct complex documents into structured, point-wise notes.
-                    Output MUST be pure HTML (no markdown).
-                    """
+                    "content": "You are a precise academic analyst. Output HTML only."
                 },
                 {
                     "role": "user",
                     "content": f"""
-                    Analyze the provided text and structure the output exactly as follows:
+                    Analyze this text. Structure the output as follows:
 
-                    --------------------------------------------------
-                    INSTRUCTIONS:
-                    1. IDENTIFY SUBTOPICS: Break the text into its natural sections (e.g., "Introduction", "Methodology", "Key Arguments").
-                    2. POINT-WISE SUMMARY: For *each* subtopic, provide a bulleted list (<ul>) of the core facts. Do NOT use paragraphs for these parts.
-                    3. JARGON BUSTER: Extract 3-5 complex technical terms or keywords and define them simply.
-                    4. FINAL VERDICT: A 2-3 sentence paragraph wrapping up the entire document.
-                    --------------------------------------------------
+                    1. Break into SUBTOPICS.
+                    2. For each subtopic, use an <h3> tag with the specific Topic Name.
+                    3. Under the <h3>, provide a bulleted summary <ul>.
+                    4. End with a 🏁 Final Summary paragraph.
 
-                    REQUIRED HTML OUTPUT FORMAT:
-
-                    <h3>📌 [Insert Subtopic Name Here]</h3>
-                    <ul>
-                        <li>Key point about this subtopic...</li>
-                        <li>Another critical detail...</li>
-                        <li>Data or specific fact...</li>
-                    </ul>
+                    Example Format:
+                    <h3>📌 [Topic Name]</h3>
+                    <ul><li>Point 1</li></ul>
                     <hr>
 
-                    <h3>📚 Jargon Buster</h3>
-                    <ul>
-                        <li><strong>[Keyword 1]:</strong> Simple definition.</li>
-                        <li><strong>[Keyword 2]:</strong> Simple definition.</li>
-                    </ul>
-                    <hr>
-
-                    <h3>🏁 Final Summary</h3>
-                    <p>
-                        [Write a cohesive 2-3 sentence paragraph summarizing the main thesis or conclusion of the entire document here.]
-                    </p>
-
-                    --------------------------------------------------
-                    TEXT TO ANALYZE:
+                    TEXT:
                     {truncated_text}
                     """
                 }
             ],
             model="llama-3.3-70b-versatile",
         )
+        
+        # RETURN BOTH!
+        return completion.choices[0].message.content, truncated_text
 
+    except Exception as e:
+        return f"❌ AI Error: {str(e)}", ""
+
+
+def generate_deep_dive(topic, full_text):
+    """
+    Generates a detailed explanation for a SPECIFIC topic using the full context.
+    """
+    if not api_key:
+        return "Error: API Key missing."
+
+    try:
+        client = Groq(api_key=api_key)
+        
+        completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a strict academic tutor. You provide exhaustive, detailed explanations."
+                },
+                {
+                    "role": "user",
+                    "content": f"""
+                    CONTEXT:
+                    {full_text}
+                    
+                    TASK:
+                    The student has requested a "Deep Dive" on the specific topic: "{topic}".
+                    
+                    INSTRUCTIONS:
+                    1. Reread the Context and find EVERYTHING related to "{topic}".
+                    2. Explain it in extreme detail. Do not leave out any nuance, formula, or figure mentioned in the text.
+                    3. If there are steps, list them. If there is a table described, format it as HTML.
+                    4. Use simple HTML (<p>, <ul>, <strong>, <table>).
+                    
+                    OUTPUT:
+                    Provide ONLY the detailed explanation.
+                    """
+                }
+            ],
+            model="llama-3.3-70b-versatile",
+        )
         return completion.choices[0].message.content
 
     except Exception as e:
-        return f"❌ AI Error: {str(e)}"
+        return f"Error: {str(e)}"
