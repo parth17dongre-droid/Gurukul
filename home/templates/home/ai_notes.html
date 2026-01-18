@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gurukul AI - Smart Notes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'home/style.css' %}">
+    
+    <style>
+        /* Specific Styles for AI Notes Content */
+        .notes-content h3 { color: var(--accent); margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .notes-content ul { padding-left: 20px; line-height: 1.6; color: var(--text-main); }
+        .notes-content li { margin-bottom: 10px; }
+        .notes-content strong { color: var(--primary); }
+        .notes-content p { color: var(--text-muted); line-height: 1.6; }
+        .loader { display: none; text-align: center; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-brain" style="color: var(--primary);"></i> Gurukul
+        </div>
+        <a href="{% url 'dashboard' %}" class="menu-item"><i class="fa-solid fa-house"></i> Dashboard</a>
+        <a href="{% url 'attendance' %}" class="menu-item"><i class="fa-solid fa-calendar-check"></i> Attendance</a>
+        <a href="{% url 'ai_notes' %}" class="menu-item active"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes</a>
+        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-clipboard-question"></i> Quizzes</div>
+        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-chart-line"></i> CGPA</div>
+    </nav>
+
+    <main class="main-content">
+        <div class="header">
+            <div>
+                <h1 style="font-size: 1.8rem; font-weight: 600;">AI Note Generator</h1>
+                <p style="color: var(--text-muted);">Turn boring slides into smart summaries instantly.</p>
+            </div>
+        </div>
+
+        <div class="glass-panel" style="margin-bottom: 30px;">
+            <form method="post" enctype="multipart/form-data" onsubmit="document.querySelector('.loader').style.display='block'">
+                {% csrf_token %}
+                
+                <div style="border: 2px dashed rgba(255,255,255,0.1); border-radius: 10px; padding: 40px; text-align: center; transition: 0.3s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <i class="fa-solid fa-file-pdf" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 15px;"></i>
+                    <p style="margin-bottom: 20px;">Upload your <strong>PDF</strong> or <strong>PPTX</strong> (Max 10MB)</p>
+                    <input type="file" name="document" accept=".pdf,.pptx,.ppt" required style="margin-bottom: 20px; color: var(--text-muted);">
+                    <br>
+                    <button type="submit" class="btn-glass btn-primary" style="padding: 10px 30px;">
+                        <i class="fa-solid fa-bolt"></i> Generate Magic Notes
+                    </button>
+                </div>
+            </form>
+
+            <div class="loader">
+                <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--accent);"></i>
+                <p style="margin-top: 10px; color: var(--text-muted);">Reading your file... Using 100% of my brain power...</p>
+            </div>
+
+            {% if error %}
+            <div style="margin-top: 20px; padding: 15px; background: rgba(236, 72, 153, 0.1); border: 1px solid var(--accent); color: var(--accent); border-radius: 8px;">
+                {{ error }}
+            </div>
+            {% endif %}
+        </div>
+
+        {% if notes %}
+        <div class="glass-panel notes-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 1.4rem;"><i class="fa-solid fa-book-open"></i> Generated Notes</h2>
+                <button onclick="window.print()" class="btn-glass" style="font-size: 0.8rem;">
+                    <i class="fa-solid fa-print"></i> Save as PDF
+                </button>
+            </div>
+            
+            <div style="background: rgba(0,0,0,0.2); padding: 30px; border-radius: 10px;">
+                {{ notes|safe }}
+            </div>
+        </div>
+        {% endif %}
+
+    </main>
+</body>
+</html>

@@ -23,7 +23,10 @@
             <i class="fa-solid fa-calendar-check"></i> Attendance
         </a>
         
-        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes</div>
+        <a href="{% url 'ai_notes' %}" class="menu-item">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes
+        </a>
+        
         <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-clipboard-question"></i> Quizzes</div>
         <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-chart-line"></i> CGPA</div>
 
@@ -77,7 +80,7 @@
                 </div>
                 <h3 style="margin-bottom: 5px;">AI Notes</h3>
                 <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Upload PDFs and generate instant summaries.</p>
-                <button class="btn-glass" style="width: 100%; opacity: 0.7;">Coming Soon</button>
+                <a href="{% url 'ai_notes' %}" class="btn-glass" style="width: 100%; text-align: center; display: block; text-decoration: none; color: inherit;">Try Now</a>
             </div>
 
             <div class="session-card">

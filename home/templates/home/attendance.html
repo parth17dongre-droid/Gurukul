@@ -23,7 +23,10 @@
             <i class="fa-solid fa-calendar-check"></i> Attendance
         </a>
         
-        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes</div>
+        <a href="{% url 'ai_notes' %}" class="menu-item">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes
+        </a>
+        
         <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-clipboard-question"></i> Quizzes</div>
         <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-chart-line"></i> CGPA</div>
 
@@ -197,8 +200,8 @@
                                 {% else %}
                                     <div style="height: 8px; background: var(--accent); border-radius: 4px; overflow: hidden; width: 100%;">
                                         <div style="height: 100%; width: {{ sub.attendance_percentage }}%; 
-                                                    background: var(--success); 
-                                                    transition: width 0.5s ease;">
+                                                        background: var(--success); 
+                                                        transition: width 0.5s ease;">
                                         </div>
                                     </div>
                                 {% endif %}

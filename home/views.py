@@ -8,6 +8,7 @@ import datetime
 from .models import StudentProfile, AttendanceSession, Subject
 from .forms import SignUpForm, TimetableUploadForm
 from .utils import TimetableParser, update_attendance_stats
+from .ai_utils import generate_notes  # <--- NEW IMPORT FOR AI
 
 # --- 1. LANDING PAGE ---
 def index(request):
@@ -72,7 +73,10 @@ def dashboard(request):
 @login_required(login_url='login')
 def attendance(request):
     profile, created = StudentProfile.objects.get_or_create(user=request.user)
-    today = datetime.date(2026,1,19)
+    
+    # ⚠️ DEV MODE: HARDCODED DATE FOR TESTING
+    today = datetime.date(2026, 1, 19) 
+    # today = datetime.date.today() # Uncomment this when done testing
 
     # Logic A: Handle "Reset"
     if request.method == 'POST' and 'reset_timetable' in request.POST:
@@ -142,4 +146,26 @@ def attendance(request):
         'today_date': today.strftime("%A, %d %B %Y"),
     }
     return render(request, 'home/attendance.html', context)
+
+# --- 7. AI NOTES VIEW (NEW!) ---
+@login_required(login_url='login')
+def ai_notes(request):
+    notes = None
+    error = None
     
+    if request.method == 'POST' and 'document' in request.FILES:
+        uploaded_file = request.FILES['document']
+        
+        # Simple size check (limit to 10MB)
+        if uploaded_file.size > 10 * 1024 * 1024:
+            error = "File too large. Please upload a file smaller than 10MB."
+        else:
+            # CALL THE AI
+            notes = generate_notes(uploaded_file)
+            
+            # Check if AI returned an error string
+            if notes and notes.startswith("❌"):
+                error = notes
+                notes = None
+
+    return render(request, 'home/ai_notes.html', {'notes': notes, 'error': error})

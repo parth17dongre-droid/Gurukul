@@ -15,4 +15,5 @@ urlpatterns = [
     
     # Attendance (Handles both Upload AND Tracking now)
     path('attendance/', views.attendance, name='attendance'),
+    path('ai-notes/', views.ai_notes, name='ai_notes'),
 ]
