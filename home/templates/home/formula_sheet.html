@@ -1,0 +1,76 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formula Sheet Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'home/style.css' %}">
+    
+    <style>
+        /* Table Styling for Formulas */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; color: #e5e7eb; }
+        th { text-align: left; color: var(--accent); border-bottom: 2px solid rgba(255,255,255,0.1); }
+        td { border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        /* Math Font */
+        .math-text { font-family: 'Courier New', monospace; font-weight: bold; color: #fbbf24; }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand"><i class="fa-solid fa-brain" style="color: var(--primary);"></i> Gurukul</div>
+        <a href="{% url 'dashboard' %}" class="menu-item"><i class="fa-solid fa-house"></i> Dashboard</a>
+        <a href="{% url 'ai_notes' %}" class="menu-item"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes</a>
+        <a href="{% url 'formula_sheet' %}" class="menu-item active"><i class="fa-solid fa-square-root-variable"></i> Formula Sheet</a>
+    </nav>
+
+    <main class="main-content">
+        <div class="header">
+            <div>
+                <h1 style="font-size: 1.8rem; font-weight: 600;">🧮 Formula Extractor</h1>
+                <p style="color: var(--text-muted);">Upload math notes, get a cheat sheet instantly.</p>
+            </div>
+        </div>
+
+        {% if not formulas %}
+        <div class="glass-panel" style="text-align: center; padding: 40px;">
+            <form method="post" enctype="multipart/form-data" onsubmit="document.getElementById('loading').style.display='block'">
+                {% csrf_token %}
+                <i class="fa-solid fa-calculator" style="font-size: 3rem; color: var(--accent); margin-bottom: 20px;"></i>
+                <p>Upload PDFs with heavy math content.</p>
+                <input type="file" name="document" accept=".pdf,.pptx" required style="margin: 20px 0; display: block; margin-left: auto; margin-right: auto;">
+                <button type="submit" class="btn-glass btn-primary">Extract Formulas</button>
+            </form>
+            
+            <div id="loading" style="display:none; margin-top: 20px;">
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Crunching numbers...
+            </div>
+            
+            {% if error %}<p style="color: #ec4899; margin-top: 10px;">{{ error }}</p>{% endif %}
+        </div>
+        {% endif %}
+
+        {% if formulas %}
+        <div class="glass-panel">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <h2>📝 Your Cheat Sheet</h2>
+                <button onclick="window.print()" class="btn-glass"><i class="fa-solid fa-print"></i> Print / PDF</button>
+            </div>
+            
+            <div style="background: rgba(0,0,0,0.2); padding: 30px; border-radius: 10px;">
+                {{ formulas|safe }}
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <a href="{% url 'formula_sheet' %}" class="btn-glass">Scan Another File</a>
+            </div>
+        </div>
+        {% endif %}
+
+    </main>
+</body>
+</html>

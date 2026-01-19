@@ -19,4 +19,5 @@ urlpatterns = [
     path('deep-dive/', views.deep_dive_view, name='deep_dive'),
     path('library/', views.library_view, name='library'),
     path('add-subject/', views.add_subject, name='add_subject'),
+    path('formula-sheet/', views.formula_sheet_view, name='formula_sheet'),
 ]

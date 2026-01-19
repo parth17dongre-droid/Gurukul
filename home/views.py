@@ -12,6 +12,7 @@ from .models import StudentProfile, AttendanceSession, Subject, AINote
 from .forms import SignUpForm, TimetableUploadForm
 from .utils import TimetableParser, update_attendance_stats
 from .ai_utils import generate_notes, generate_deep_dive
+from .ai_utils import generate_formula_sheet
 
 # ==========================================
 # 🔐 AUTHENTICATION & LANDING
@@ -269,3 +270,25 @@ def deep_dive_view(request):
             return JsonResponse({'error': str(e)}, status=500)
     
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+@login_required(login_url='login')
+def formula_sheet_view(request):
+    formulas = None
+    error = None
+
+    if request.method == 'POST' and 'document' in request.FILES:
+        uploaded_file = request.FILES['document']
+        
+        if uploaded_file.size > 10 * 1024 * 1024:
+            error = "File too large. Max 10MB."
+        else:
+            # Call the specialized Math AI
+            formulas = generate_formula_sheet(uploaded_file)
+            
+            if formulas.startswith("❌"):
+                error = formulas
+                formulas = None
+
+    return render(request, 'home/formula_sheet.html', {
+        'formulas': formulas,
+        'error': error
+    })
