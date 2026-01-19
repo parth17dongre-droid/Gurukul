@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 # 1. Profile
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -66,3 +67,15 @@ class AINote(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.subject.name if self.subject else 'Unsorted'})"
+
+class StudentProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    attendance_percentage = models.FloatField(default=0.0)
+    target_cgpa = models.FloatField(default=9.0)
+    
+    # --- ADD THESE NEW FIELDS ---
+    semester = models.CharField(max_length=50, default="Not Set")
+    batch = models.CharField(max_length=20, default="--")
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
