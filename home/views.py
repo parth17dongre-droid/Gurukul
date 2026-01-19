@@ -12,7 +12,7 @@ from .models import StudentProfile, AttendanceSession, Subject, AINote
 from .forms import SignUpForm, TimetableUploadForm
 from .utils import TimetableParser, update_attendance_stats
 from .ai_utils import generate_notes, generate_deep_dive
-
+# (Formula sheet import removed)
 
 # ==========================================
 # 🔐 AUTHENTICATION & LANDING
@@ -75,10 +75,9 @@ def dashboard(request):
 def attendance(request):
     profile, created = StudentProfile.objects.get_or_create(user=request.user)
     
-    # ⚠️ DEV MODE: HARDCODED DATE (Change to datetime.date.today() later)
+    # ⚠️ DEV MODE: HARDCODED DATE
     today = datetime.date(2026, 1, 19) 
 
-    # Logic A: Reset
     if request.method == 'POST' and 'reset_timetable' in request.POST:
         AttendanceSession.objects.filter(user=request.user).delete()
         Subject.objects.filter(user=request.user).delete()
@@ -86,7 +85,6 @@ def attendance(request):
         profile.save()
         return redirect('attendance')
 
-    # Logic B: Upload
     if request.method == 'POST' and 'upload_file' in request.POST:
         form = TimetableUploadForm(request.POST, request.FILES)
         if form.is_valid():
@@ -98,13 +96,23 @@ def attendance(request):
             
             if success:
                 update_attendance_stats(request.user)
+                try:
+                    excel_file.seek(0)
+                    detected_sem = parser.extract_semester_only(excel_file)
+                    profile = request.user.studentprofile
+                    profile.batch = batch
+                    if detected_sem:
+                        profile.semester = detected_sem
+                    profile.save()
+                except Exception as e:
+                    print(f"Non-critical error updating profile: {e}")
+
                 return redirect('attendance')
             else:
                 return render(request, 'home/attendance.html', {
                     'form': form, 'error': message, 'has_timetable': False
                 })
 
-    # Logic C: Mark Attendance
     if request.method == 'POST' and 'session_id' in request.POST:
         session_id = request.POST.get('session_id')
         status = request.POST.get('status')
@@ -114,7 +122,6 @@ def attendance(request):
         update_attendance_stats(request.user)
         return redirect('attendance')
 
-    # Logic D: Display
     has_timetable = Subject.objects.filter(user=request.user).exists()
     
     if not has_timetable:
@@ -134,15 +141,12 @@ def attendance(request):
     return render(request, 'home/attendance.html', context)
 
 # ==========================================
-# 📚 LIBRARY & SUBJECTS (UPDATED)
+# 📚 LIBRARY
 # ==========================================
 
 @login_required(login_url='login')
 def library_view(request):
-    # 🟢 UPDATE: Filter to show ONLY Theory subjects
     subjects = Subject.objects.filter(user=request.user, is_theory=True)
-    
-    # Check if a specific folder is selected
     selected_subject_id = request.GET.get('subject_id')
     selected_subject = None
     notes = []
@@ -151,13 +155,10 @@ def library_view(request):
         selected_subject = get_object_or_404(Subject, id=selected_subject_id, user=request.user)
         notes = AINote.objects.filter(user=request.user, subject=selected_subject).order_by('-created_at')
     else:
-        # Show "Unsorted" notes (notes with no subject)
         notes = AINote.objects.filter(user=request.user, subject__isnull=True).order_by('-created_at')
 
     return render(request, 'home/library.html', {
-        'subjects': subjects,
-        'selected_subject': selected_subject,
-        'notes': notes
+        'subjects': subjects, 'selected_subject': selected_subject, 'notes': notes
     })
 
 @login_required
@@ -165,17 +166,13 @@ def add_subject(request):
     if request.method == 'POST':
         name = request.POST.get('subject_name')
         if name:
-            # 🟢 UPDATE: Explicitly set is_theory=True for manual folders
             Subject.objects.create(
-                user=request.user, 
-                name=name, 
-                code=name[:3].upper(),
-                is_theory=True
+                user=request.user, name=name, code=name[:3].upper(), is_theory=True
             )
     return redirect('library')
 
 # ==========================================
-# 🤖 AI NOTES (UPDATED LOGIC)
+# 🤖 AI NOTES
 # ==========================================
 
 @login_required(login_url='login')
@@ -183,11 +180,8 @@ def ai_notes(request):
     summary = None
     raw_text = None
     error = None
-    
-    # 🟢 UPDATE: Dropdown only shows Theory subjects
     subjects = Subject.objects.filter(user=request.user, is_theory=True)
 
-    # 1. Check if user is viewing an OLD note (from Library)
     note_id = request.GET.get('note_id')
     if note_id:
         saved_note = get_object_or_404(AINote, id=note_id, user=request.user)
@@ -195,33 +189,25 @@ def ai_notes(request):
         raw_text = saved_note.raw_text
 
     if request.method == 'POST':
-        # 2. CASE A: User clicked "Save Note" button
         if 'save_note' in request.POST:
             title = request.POST.get('title')
             content = request.POST.get('content')
             raw = request.POST.get('raw')
             subject_id = request.POST.get('subject_id')
             
-            # Find the subject object if selected
             subject_obj = None
             if subject_id:
                 subject_obj = Subject.objects.get(id=subject_id)
                 
-            # Create the permanent note
             AINote.objects.create(
-                user=request.user,
-                title=title,
-                subject=subject_obj,
-                content_html=content,
-                raw_text=raw
+                user=request.user, title=title, subject=subject_obj,
+                content_html=content, raw_text=raw
             )
-            # Redirect to the specific folder view in Library
             if subject_obj:
                 return redirect(f'/library/?subject_id={subject_obj.id}')
             else:
                 return redirect('library')
 
-        # 3. CASE B: User Uploaded a File
         elif 'document' in request.FILES:
             uploaded_file = request.FILES['document']
             if uploaded_file.size > 10 * 1024 * 1024:
@@ -233,60 +219,34 @@ def ai_notes(request):
                 else:
                     summary = result
                     raw_text = text_content
-                    # We DO NOT save yet. We render the page so user can Review & Save.
 
     return render(request, 'home/ai_notes.html', {
-        'summary': summary, 
-        'raw_text': raw_text, 
-        'error': error,
+        'summary': summary, 'raw_text': raw_text, 'error': error,
         'subjects': subjects,
         'filename': request.FILES['document'].name if request.FILES.get('document') else "My Note"
     })
 
-# ==========================================
-# 🧠 DEEP DIVE API
-# ==========================================
-
 @csrf_exempt
 def deep_dive_view(request):
-    """
-    API Endpoint called by JavaScript when 'Deep Dive' button is clicked.
-    Returns a detailed explanation of a specific topic.
-    """
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             topic = data.get('topic')
             full_text = data.get('full_text')
-            
             if not topic or not full_text:
                 return JsonResponse({'error': 'Missing data'}, status=400)
-
-            # Call AI for the specific topic
             detailed_note = generate_deep_dive(topic, full_text)
-            
             return JsonResponse({'detail': detailed_note})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
-    
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+# ==========================================
+# 👤 PROFILE
+# ==========================================
 
-<<<<<<< HEAD
-
-# --- 7. PROFILE VIEW ---
 @login_required(login_url='login')
 def profile_view(request):
-    # Fetch the profile to display stats like attendance %
     profile, created = StudentProfile.objects.get_or_create(user=request.user)
-    
-    context = {
-        'profile': profile,
-    }
+    context = {'profile': profile}
     return render(request, 'home/profile.html', context)
-=======
-    return render(request, 'home/formula_sheet.html', {
-        'formulas': formulas,
-        'error': error
-    })
->>>>>>> parent of 48e56f0 (added profile page)
