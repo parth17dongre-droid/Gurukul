@@ -1,0 +1,176 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Gurukul AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'home/style.css' %}">
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-brain" style="color: var(--primary);"></i> Gurukul
+        </div>
+        
+        <a href="{% url 'dashboard' %}" class="menu-item">
+            <i class="fa-solid fa-house"></i> Dashboard
+        </a>
+        <a href="{% url 'attendance' %}" class="menu-item">
+            <i class="fa-solid fa-calendar-check"></i> Attendance
+        </a>
+        <a href="{% url 'library' %}" class="menu-item">
+            <i class="fa-solid fa-folder-open"></i> Library
+        </a>
+        <a href="{% url 'ai_notes' %}" class="menu-item">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes
+        </a>
+        <a href="{% url 'formula_sheet' %}" class="menu-item">
+            <i class="fa-solid fa-square-root-variable"></i> Formula Sheet
+        </a>
+        
+        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-clipboard-question"></i> Quizzes</div>
+        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-chart-line"></i> CGPA</div>
+
+        <form action="{% url 'logout' %}" method="post" style="margin-top: auto;">
+            {% csrf_token %}
+            <button type="submit" class="menu-item" style="background: none; border: none; width: 100%; cursor: pointer; color: var(--accent);">
+                <i class="fa-solid fa-power-off"></i> Logout
+            </button>
+        </form>
+    </nav>
+
+    <main class="main-content">
+        
+        <div class="header">
+            <div>
+                <h1 style="font-size: 1.8rem; font-weight: 600;">Student Profile</h1>
+                <p style="color: var(--text-muted);">Manage your account and academic details.</p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="btn-glass" style="padding: 8px 16px; text-decoration: none; font-size: 0.9rem;">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="bento-grid">
+
+            <div class="session-card" style="grid-column: 1 / -1; display: flex; align-items: center; gap: 30px; background: linear-gradient(145deg, rgba(30,41,59,0.8), rgba(99,102,241,0.1));">
+                
+                <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(45deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);">
+                    {{ user.username|first|upper }}
+                </div>
+
+                <div style="flex-grow: 1;">
+                    <h2 style="font-size: 2rem; margin-bottom: 5px;">{{ user.username|title }}</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 15px;"><i class="fa-regular fa-envelope"></i> {{ user.email }}</p>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; border: 1px solid rgba(16, 185, 129, 0.2);">
+                            <i class="fa-solid fa-check-circle"></i> Active Student
+                        </span>
+                        <span style="background: rgba(255,255,255,0.05); color: var(--text-muted); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; border: 1px solid var(--border-glass);">
+                            Joined: {{ user.date_joined|date:"M Y" }}
+                        </span>
+                    </div>
+                </div>
+
+                <button class="btn-glass" style="height: fit-content;">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit
+                </button>
+            </div>
+
+            <div class="session-card">
+                <div style="margin-bottom: 15px;">
+                    <i class="fa-solid fa-graduation-cap" style="font-size: 1.5rem; color: var(--secondary);"></i>
+                </div>
+                <h3 style="margin-bottom: 15px;">Academic Details</h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                        <span style="color: var(--text-muted);">Batch</span>
+                        <span style="font-weight: 600;">B2</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                        <span style="color: var(--text-muted);">Semester</span>
+                        <span style="font-weight: 600;">2nd Sem</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Department</span>
+                        <span style="font-weight: 600;">CSE</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="session-card">
+                <div style="margin-bottom: 15px;">
+                    <i class="fa-solid fa-chart-pie" style="font-size: 1.5rem; color: var(--success);"></i>
+                </div>
+                <h3 style="margin-bottom: 10px;">Attendance Stats</h3>
+                
+                <div style="text-align: center; margin: 20px 0;">
+                    <span style="font-size: 2.5rem; font-weight: 700; color: var(--text-main);">
+                        {{ profile.attendance_percentage }}%
+                    </span>
+                    <p style="color: {% if profile.attendance_percentage >= 75 %}var(--success){% else %}var(--accent){% endif %}; font-size: 0.9rem;">
+                        {% if profile.attendance_percentage >= 75 %}Excellent Record{% else %}Attendance Low{% endif %}
+                    </p>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); height: 6px; border-radius: 3px; overflow: hidden;">
+                    <div style="width: {{ profile.attendance_percentage }}%; height: 100%; background: {% if profile.attendance_percentage >= 75 %}var(--success){% else %}var(--accent){% endif %};"></div>
+                </div>
+            </div>
+
+            <div class="session-card">
+                <div style="margin-bottom: 15px;">
+                    <i class="fa-solid fa-gear" style="font-size: 1.5rem; color: var(--text-muted);"></i>
+                </div>
+                <h3 style="margin-bottom: 15px;">Settings</h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn-glass" style="width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+                        <span>Change Password</span>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.8rem;"></i>
+                    </button>
+                    <button class="btn-glass" style="width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+                        <span>Notification Preferences</span>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.8rem;"></i>
+                    </button>
+                    <form action="{% url 'logout' %}" method="post" style="width: 100%;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-glass" style="width: 100%; text-align: left; color: var(--accent); border-color: rgba(236, 72, 153, 0.3);">
+                            <i class="fa-solid fa-power-off"></i> Sign Out
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const cards = document.querySelectorAll(".session-card");
+
+            cards.forEach((card) => {
+                card.addEventListener("mousemove", (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    const sensitivity = 35; 
+                    const rotateX = (-y / sensitivity).toFixed(2);
+                    const rotateY = (x / sensitivity).toFixed(2);
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(0.98)`;
+                });
+                card.addEventListener("mouseleave", () => {
+                    card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)";
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

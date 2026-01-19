@@ -201,3 +201,40 @@ def update_attendance_stats(user):
         profile.save()
     except:
         pass
+class TimetableParserV2:
+    
+    # [Keep your existing parse_excel method EXACTLY as it is]
+    def parse_excel(self, file, user, batch):
+        # ... your existing working code ...
+        pass 
+
+    # --- ADD THIS NEW ISOLATED FUNCTION ---
+    def extract_semester_only(self, file):
+        """
+        Scans the Excel file specifically for Semester information.
+        Does not affect attendance parsing.
+        """
+        try:
+            # Read all sheets without headers to scan raw text
+            all_sheets = pd.read_excel(file, header=None, sheet_name=None)
+            
+            for name, df in all_sheets.items():
+                # Scan the first 10 rows of every sheet
+                for i in range(min(10, len(df))):
+                    # Convert row to a single string (e.g., "TIME TABLE B.TECH CSE IV SEMESTER")
+                    row_str = " ".join([str(val) for val in df.iloc[i] if pd.notna(val)]).upper()
+                    
+                    # Regex to catch: "IV SEM", "Semester 4", "3rd Sem", "Sem-V"
+                    # 1. Roman/Number BEFORE "Sem" (e.g. IV Sem, 4th Sem)
+                    # 2. Roman/Number AFTER "Sem" (e.g. Sem IV, Semester 4)
+                    match = re.search(r'\b((?:SEM(?:ESTER)?)\s*[\-:]?\s*([IVX]+|\d+(?:ST|ND|RD|TH)?))|(([IVX]+|\d+(?:ST|ND|RD|TH)?)\s*(?:SEM(?:ESTER)?))', row_str)
+                    
+                    if match:
+                        found_text = match.group(0).strip()
+                        # Format it nicely (e.g., "IV SEMESTER")
+                        return found_text.title() 
+            
+            return "Not Detected"
+        except Exception as e:
+            print(f"Semester Extract Error: {e}")
+            return None
