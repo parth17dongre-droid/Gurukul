@@ -15,14 +15,14 @@ urlpatterns = [
     
     # Attendance (Handles both Upload AND Tracking now)
     path('attendance/', views.attendance, name='attendance'),
+    
+    # AI Tools & Library
     path('ai-notes/', views.ai_notes, name='ai_notes'),
     path('deep-dive/', views.deep_dive_view, name='deep_dive'),
     path('library/', views.library_view, name='library'),
     path('add-subject/', views.add_subject, name='add_subject'),
-<<<<<<< HEAD
-=======
     path('formula-sheet/', views.formula_sheet_view, name='formula_sheet'),
-    path('profile/',views.profile_view,name ='profile'),
     
->>>>>>> 48e56f0e299aba054027ffd646d59123cb9604ce
+    # Profile
+    path('profile/', views.profile_view, name='profile'),
 ]
