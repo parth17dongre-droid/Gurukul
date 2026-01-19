@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="main-content">
+    <div class="glass-panel" style="max-width: 800px; margin: 0 auto;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h2 style="margin: 0;">🎯 Quiz Time</h2>
+            <div style="background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px;">
+                Score: <span id="score">0</span>
+            </div>
+        </div>
+
+        <div id="quiz-container">
+            </div>
+
+        <div id="result-screen" style="display: none; text-align: center;">
+            <i class="fa-solid fa-trophy" style="font-size: 4rem; color: #fbbf24; margin-bottom: 20px;"></i>
+            <h2>Quiz Complete!</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 30px;">You scored <span id="final-score" style="color: var(--primary); font-weight: bold;"></span></p>
+            <a href="{% url 'quiz' %}" class="btn-glass">Take Another Quiz</a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Load quiz data from Django context
+    const questions = {{ quiz_data|safe }};
+    let currentQuestion = 0;
+    let score = 0;
+
+    const container = document.getElementById('quiz-container');
+    const resultScreen = document.getElementById('result-screen');
+    const scoreDisplay = document.getElementById('score');
+
+    function loadQuestion() {
+        if (currentQuestion >= questions.length) {
+            showResults();
+            return;
+        }
+
+        const q = questions[currentQuestion];
+        
+        let html = `
+            <div class="fade-in">
+                <div style="margin-bottom: 10px; color: var(--accent); font-size: 0.9rem;">QUESTION ${currentQuestion + 1} OF ${questions.length}</div>
+                <h3 style="margin-bottom: 25px; line-height: 1.5;">${q.question}</h3>
+                <div style="display: grid; gap: 15px;">
+        `;
+
+        q.options.forEach(opt => {
+            // Escape quotes for the onclick function
+            const safeOpt = opt.replace(/'/g, "\\'");
+            const safeAnswer = q.answer.replace(/'/g, "\\'");
+            
+            html += `
+                <button onclick="checkAnswer(this, '${safeOpt}', '${safeAnswer}')" 
+                        class="quiz-opt" 
+                        style="text-align: left; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; cursor: pointer; transition: 0.2s;">
+                    ${opt}
+                </button>
+            `;
+        });
+
+        html += `</div></div>`;
+        container.innerHTML = html;
+    }
+
+    window.checkAnswer = function(btn, selected, correct) {
+        // Disable all buttons
+        const buttons = document.querySelectorAll('.quiz-opt');
+        buttons.forEach(b => b.disabled = true);
+
+        if (selected === correct) {
+            btn.style.background = 'rgba(16, 185, 129, 0.3)'; // Green
+            btn.style.borderColor = '#10b981';
+            score++;
+            scoreDisplay.innerText = score;
+        } else {
+            btn.style.background = 'rgba(239, 68, 68, 0.3)'; // Red
+            btn.style.borderColor = '#ef4444';
+            
+            // Highlight correct one
+            buttons.forEach(b => {
+                if (b.innerText.trim() === correct.trim()) {
+                    b.style.background = 'rgba(16, 185, 129, 0.3)';
+                    b.style.borderColor = '#10b981';
+                }
+            });
+        }
+
+        // Wait 1.5s then go next
+        setTimeout(() => {
+            currentQuestion++;
+            loadQuestion();
+        }, 1500);
+    };
+
+    function showResults() {
+        container.style.display = 'none';
+        resultScreen.style.display = 'block';
+        document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+    }
+
+    // Start
+    loadQuestion();
+</script>
+
+<style>
+    .quiz-opt:hover:not(:disabled) {
+        background: rgba(255,255,255,0.1) !important;
+        transform: translateX(5px);
+    }
+    .fade-in { animation: fadeIn 0.5s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+{% endblock %}

@@ -8,11 +8,12 @@ import json
 import datetime
 
 # Local imports
+# ✅ CORRECT LINE
 from .models import StudentProfile, AttendanceSession, Subject, AINote
 from .forms import SignUpForm, TimetableUploadForm
 from .utils import TimetableParser, update_attendance_stats
-from .ai_utils import generate_notes, generate_deep_dive
-# (Formula sheet import removed)
+# 🟢 UPDATED: Removed generate_formula_sheet from imports
+from .ai_utils import generate_notes, generate_deep_dive, generate_quiz
 
 # ==========================================
 # 🔐 AUTHENTICATION & LANDING
@@ -75,9 +76,10 @@ def dashboard(request):
 def attendance(request):
     profile, created = StudentProfile.objects.get_or_create(user=request.user)
     
-    # ⚠️ DEV MODE: HARDCODED DATE
+    # ⚠️ DEV MODE: HARDCODED DATE (Change to datetime.date.today() later)
     today = datetime.date(2026, 1, 19) 
 
+    # Logic A: Reset
     if request.method == 'POST' and 'reset_timetable' in request.POST:
         AttendanceSession.objects.filter(user=request.user).delete()
         Subject.objects.filter(user=request.user).delete()
@@ -85,6 +87,7 @@ def attendance(request):
         profile.save()
         return redirect('attendance')
 
+    # Logic B: Upload
     if request.method == 'POST' and 'upload_file' in request.POST:
         form = TimetableUploadForm(request.POST, request.FILES)
         if form.is_valid():
@@ -96,23 +99,13 @@ def attendance(request):
             
             if success:
                 update_attendance_stats(request.user)
-                try:
-                    excel_file.seek(0)
-                    detected_sem = parser.extract_semester_only(excel_file)
-                    profile = request.user.studentprofile
-                    profile.batch = batch
-                    if detected_sem:
-                        profile.semester = detected_sem
-                    profile.save()
-                except Exception as e:
-                    print(f"Non-critical error updating profile: {e}")
-
                 return redirect('attendance')
             else:
                 return render(request, 'home/attendance.html', {
                     'form': form, 'error': message, 'has_timetable': False
                 })
 
+    # Logic C: Mark Attendance
     if request.method == 'POST' and 'session_id' in request.POST:
         session_id = request.POST.get('session_id')
         status = request.POST.get('status')
@@ -122,6 +115,7 @@ def attendance(request):
         update_attendance_stats(request.user)
         return redirect('attendance')
 
+    # Logic D: Display
     has_timetable = Subject.objects.filter(user=request.user).exists()
     
     if not has_timetable:
@@ -141,12 +135,12 @@ def attendance(request):
     return render(request, 'home/attendance.html', context)
 
 # ==========================================
-# 📚 LIBRARY
+# 📚 LIBRARY & SUBJECTS
 # ==========================================
 
 @login_required(login_url='login')
 def library_view(request):
-    subjects = Subject.objects.filter(user=request.user, is_theory=True)
+    subjects = Subject.objects.filter(user=request.user)
     selected_subject_id = request.GET.get('subject_id')
     selected_subject = None
     notes = []
@@ -158,7 +152,9 @@ def library_view(request):
         notes = AINote.objects.filter(user=request.user, subject__isnull=True).order_by('-created_at')
 
     return render(request, 'home/library.html', {
-        'subjects': subjects, 'selected_subject': selected_subject, 'notes': notes
+        'subjects': subjects,
+        'selected_subject': selected_subject,
+        'notes': notes
     })
 
 @login_required
@@ -167,7 +163,10 @@ def add_subject(request):
         name = request.POST.get('subject_name')
         if name:
             Subject.objects.create(
-                user=request.user, name=name, code=name[:3].upper(), is_theory=True
+                user=request.user, 
+                name=name, 
+                code=name[:3].upper(),
+                is_theory=True
             )
     return redirect('library')
 
@@ -180,7 +179,7 @@ def ai_notes(request):
     summary = None
     raw_text = None
     error = None
-    subjects = Subject.objects.filter(user=request.user, is_theory=True)
+    subjects = Subject.objects.filter(user=request.user)
 
     note_id = request.GET.get('note_id')
     if note_id:
@@ -200,13 +199,13 @@ def ai_notes(request):
                 subject_obj = Subject.objects.get(id=subject_id)
                 
             AINote.objects.create(
-                user=request.user, title=title, subject=subject_obj,
-                content_html=content, raw_text=raw
+                user=request.user,
+                title=title,
+                subject=subject_obj,
+                content_html=content,
+                raw_text=raw
             )
-            if subject_obj:
-                return redirect(f'/library/?subject_id={subject_obj.id}')
-            else:
-                return redirect('library')
+            return redirect(f'/library/?subject_id={subject_obj.id}' if subject_obj else 'library')
 
         elif 'document' in request.FILES:
             uploaded_file = request.FILES['document']
@@ -221,10 +220,64 @@ def ai_notes(request):
                     raw_text = text_content
 
     return render(request, 'home/ai_notes.html', {
-        'summary': summary, 'raw_text': raw_text, 'error': error,
+        'summary': summary, 
+        'raw_text': raw_text, 
+        'error': error,
         'subjects': subjects,
         'filename': request.FILES['document'].name if request.FILES.get('document') else "My Note"
     })
+
+# ==========================================
+# 🧠 QUIZ GENERATOR
+# ==========================================
+
+@login_required(login_url='login')
+def quiz_view(request):
+    subjects = Subject.objects.filter(user=request.user)
+    library_notes = AINote.objects.filter(user=request.user).order_by('-created_at')
+
+    if request.method == 'POST':
+        full_text = ""
+        
+        # A. From Library Notes
+        selected_note_ids = request.POST.getlist('selected_notes')
+        if selected_note_ids:
+            notes = AINote.objects.filter(id__in=selected_note_ids, user=request.user)
+            for note in notes:
+                full_text += f"\n\n--- Source: {note.title} ---\n{note.raw_text}"
+
+        # B. From New File
+        if 'document' in request.FILES:
+            uploaded_file = request.FILES['document']
+            _, file_text = generate_notes(uploaded_file) 
+            full_text += f"\n\n--- Source: Uploaded File ---\n{file_text}"
+
+        num_questions = int(request.POST.get('num_questions', 10))
+        
+        if len(full_text) < 50:
+             return render(request, 'home/quiz.html', {
+                'subjects': subjects, 'library_notes': library_notes,
+                'error': "Please select at least one note or upload a file."
+            })
+
+        quiz_data = generate_quiz(full_text, num_questions)
+        
+        if not quiz_data:
+             return render(request, 'home/quiz.html', {
+                'subjects': subjects, 'library_notes': library_notes,
+                'error': "AI failed to generate quiz. Try again."
+            })
+
+        return render(request, 'home/quiz_active.html', {'quiz_data': quiz_data})
+
+    return render(request, 'home/quiz.html', {
+        'subjects': subjects,
+        'library_notes': library_notes
+    })
+
+# ==========================================
+# 🧠 DEEP DIVE API
+# ==========================================
 
 @csrf_exempt
 def deep_dive_view(request):
@@ -233,20 +286,13 @@ def deep_dive_view(request):
             data = json.loads(request.body)
             topic = data.get('topic')
             full_text = data.get('full_text')
+            
             if not topic or not full_text:
                 return JsonResponse({'error': 'Missing data'}, status=400)
+
             detailed_note = generate_deep_dive(topic, full_text)
             return JsonResponse({'detail': detailed_note})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+    
     return JsonResponse({'error': 'Invalid request method'}, status=400)
-
-# ==========================================
-# 👤 PROFILE
-# ==========================================
-
-@login_required(login_url='login')
-def profile_view(request):
-    profile, created = StudentProfile.objects.get_or_create(user=request.user)
-    context = {'profile': profile}
-    return render(request, 'home/profile.html', context)

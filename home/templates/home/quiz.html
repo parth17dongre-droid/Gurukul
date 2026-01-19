@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="main-content">
+    <div class="header">
+        <div>
+            <h1 style="font-size: 1.8rem; font-weight: 600;">🧠 AI Quiz Master</h1>
+            <p style="color: var(--text-muted);">Test yourself on your own notes.</p>
+        </div>
+    </div>
+
+    {% if error %}
+    <div style="background: rgba(236, 72, 153, 0.2); border: 1px solid #ec4899; color: #fbcfe8; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="glass-panel" onsubmit="document.getElementById('loader').style.display='block'">
+        {% csrf_token %}
+
+        <h4 style="margin-bottom: 15px;">1. How many questions?</h4>
+        <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+            <label class="radio-card">
+                <input type="radio" name="num_questions" value="10" checked>
+                <span>10 Questions</span>
+            </label>
+            <label class="radio-card">
+                <input type="radio" name="num_questions" value="15">
+                <span>15 Questions</span>
+            </label>
+            <label class="radio-card">
+                <input type="radio" name="num_questions" value="20">
+                <span>20 Questions</span>
+            </label>
+        </div>
+
+        <h4 style="margin-bottom: 15px;">2. Select Source Material</h4>
+        
+        <div style="max-height: 250px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; margin-bottom: 20px;">
+            {% if library_notes %}
+                {% for note in library_notes %}
+                <label style="display: flex; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">
+                    <input type="checkbox" name="selected_notes" value="{{ note.id }}" style="margin-right: 15px; transform: scale(1.2);">
+                    <div>
+                        <div style="font-weight: 500; color: white;">{{ note.title }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">
+                            {% if note.subject %}{{ note.subject.name }}{% else %}Unsorted{% endif %} • {{ note.created_at|date:"M d" }}
+                        </div>
+                    </div>
+                </label>
+                {% endfor %}
+            {% else %}
+                <p style="padding: 10px; color: var(--text-muted);">No notes in library yet.</p>
+            {% endif %}
+        </div>
+
+        <h4 style="margin-bottom: 15px;">3. Upload Extra File (Optional)</h4>
+        <input type="file" name="document" accept=".pdf,.pptx" style="margin-bottom: 30px; color: var(--text-muted);">
+
+        <button type="submit" class="btn-glass btn-primary" style="width: 100%; padding: 15px; font-size: 1.1rem;">
+            🚀 Start Quiz
+        </button>
+        
+        <div id="loader" style="display: none; text-align: center; margin-top: 20px;">
+            <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 1.5rem; color: var(--accent);"></i>
+            <p>Generating questions...</p>
+        </div>
+    </form>
+</div>
+
+<style>
+    .radio-card { flex: 1; cursor: pointer; }
+    .radio-card input { display: none; }
+    .radio-card span {
+        display: block; text-align: center; padding: 15px;
+        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px; transition: 0.3s; color: var(--text-muted);
+    }
+    .radio-card input:checked + span {
+        background: var(--primary); color: white; border-color: var(--primary);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+    }
+</style>
+{% endblock %}

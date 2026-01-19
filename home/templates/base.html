@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gurukul AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'home/style.css' %}">
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-brain" style="color: var(--primary);"></i> Gurukul
+        </div>
+        
+        <a href="{% url 'dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <i class="fa-solid fa-house"></i> Dashboard
+        </a>
+        <a href="{% url 'attendance' %}" class="menu-item {% if request.resolver_match.url_name == 'attendance' %}active{% endif %}">
+            <i class="fa-solid fa-calendar-check"></i> Attendance
+        </a>
+        <a href="{% url 'library' %}" class="menu-item {% if request.resolver_match.url_name == 'library' %}active{% endif %}">
+            <i class="fa-solid fa-folder-open"></i> Library
+        </a>
+        <a href="{% url 'ai_notes' %}" class="menu-item {% if request.resolver_match.url_name == 'ai_notes' %}active{% endif %}">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes
+        </a>
+        <a href="{% url 'quiz' %}" class="menu-item {% if request.resolver_match.url_name == 'quiz' %}active{% endif %}">
+            <i class="fa-solid fa-clipboard-question"></i> Daily Quiz
+        </a>
+        
+        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-chart-line"></i> CGPA</div>
+
+        <form action="{% url 'logout' %}" method="post" style="margin-top: auto;">
+            {% csrf_token %}
+            <button type="submit" class="menu-item" style="background: none; border: none; width: 100%; cursor: pointer; color: var(--accent);">
+                <i class="fa-solid fa-power-off"></i> Logout
+            </button>
+        </form>
+    </nav>
+
+    {% block content %}
+    {% endblock %}
+
+</body>
+</html>
