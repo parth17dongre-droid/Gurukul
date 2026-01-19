@@ -94,32 +94,14 @@ def attendance(request):
             batch = form.cleaned_data['batch']
             
             parser = TimetableParser()
-            # 1. RUN ORIGINAL PARSER (Subjects & Attendance)
             success, message = parser.parse_excel(excel_file, request.user, batch)
             
             if success:
                 update_attendance_stats(request.user)
-
-                # 2. RUN NEW SEMESTER EXTRACTOR (Profile Info)
-                try:
-                    excel_file.seek(0)
-                    detected_sem = parser.extract_semester_only(excel_file)
-
-                    # Update Profile
-                    profile = request.user.studentprofile
-                    profile.batch = batch
-                    if detected_sem:
-                        profile.semester = detected_sem
-                    profile.save()
-                except Exception as e:
-                    print(f"Non-critical error updating profile: {e}")
-
                 return redirect('attendance')
             else:
                 return render(request, 'home/attendance.html', {
-                    'form': form,
-                    'error': message,
-                    'has_timetable': False
+                    'form': form, 'error': message, 'has_timetable': False
                 })
 
     # Logic C: Mark Attendance
@@ -290,6 +272,7 @@ def deep_dive_view(request):
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
+<<<<<<< HEAD
 
 # --- 7. PROFILE VIEW ---
 @login_required(login_url='login')
@@ -301,3 +284,9 @@ def profile_view(request):
         'profile': profile,
     }
     return render(request, 'home/profile.html', context)
+=======
+    return render(request, 'home/formula_sheet.html', {
+        'formulas': formulas,
+        'error': error
+    })
+>>>>>>> parent of 48e56f0 (added profile page)

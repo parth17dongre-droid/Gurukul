@@ -47,10 +47,9 @@
                 <h1 style="font-size: 1.8rem; font-weight: 600;">Good Morning, {{ user.username|title }}</h1>
                 <p style="color: var(--text-muted);">Here is your daily overview.</p>
             </div>
-            
-            <a href="{% url 'profile' %}" class="user-pill" style="text-decoration: none; color: inherit; transition: 0.3s; cursor: pointer;">
-                <i class="fa-regular fa-user"></i> My Profile
-            </a>
+            <div class="user-pill">
+                <i class="fa-regular fa-user"></i> Student
+            </div>
         </div>
 
         <div class="bento-grid">
@@ -125,7 +124,8 @@
                     const x = e.clientX - rect.left - rect.width / 2;
                     const y = e.clientY - rect.top - rect.height / 2;
 
-                    // Sensitivity: Higher number = Less tilt (More subtle)
+                    // UPDATED: Changed from 15 to 35
+                    // Higher number = Less tilt (More subtle)
                     const sensitivity = 35; 
 
                     const rotateX = (-y / sensitivity).toFixed(2);

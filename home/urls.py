@@ -22,7 +22,10 @@ urlpatterns = [
     path('library/', views.library_view, name='library'),
     path('add-subject/', views.add_subject, name='add_subject'),
     path('formula-sheet/', views.formula_sheet_view, name='formula_sheet'),
+<<<<<<< HEAD
     
     # Profile
     path('profile/', views.profile_view, name='profile'),
+=======
+>>>>>>> parent of 48e56f0 (added profile page)
 ]
