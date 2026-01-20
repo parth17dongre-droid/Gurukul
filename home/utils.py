@@ -1,7 +1,8 @@
 import pandas as pd
 import datetime
 import re
-from .models import Subject, AttendanceSession
+# 🟢 UPDATED: Added TimetableSlot to imports
+from .models import Subject, AttendanceSession, StudentProfile, TimetableSlot
 
 class TimetableParser:
     def parse_excel(self, file, user, batch):
@@ -93,11 +94,12 @@ class TimetableParser:
                         final_subject = self.process_part(part, batch)
                         
                         if final_subject and len(final_subject) > 1:
-                            if final_subject not in weekly_schedule[day_name]:
-                                print(f"      🔹 ADDED: {final_subject} ({day_name})")
-                                weekly_schedule[day_name].append(final_subject)
+                            # Avoid duplicates in the same day (optional, but cleaner)
+                            # if final_subject not in weekly_schedule[day_name]:
+                            print(f"      🔹 ADDED: {final_subject} ({day_name})")
+                            weekly_schedule[day_name].append(final_subject)
 
-            # 4. SAVE TO DATABASE
+            # 4. SAVE TO DATABASE (Updated for History/Lazy Loading)
             self.create_db_sessions(user, weekly_schedule)
             return True, f"Success! Loaded schedule from '{found_sheet_name}'."
 
@@ -160,23 +162,47 @@ class TimetableParser:
         if len(text) < 2: return None
         return text
 
+    # 🟢 UPDATED: This now saves the "Master Schedule" (TimetableSlot)
     def create_db_sessions(self, user, weekly_schedule):
+        # 1. Clear OLD data
         AttendanceSession.objects.filter(user=user).delete()
         Subject.objects.filter(user=user).delete()
+        TimetableSlot.objects.filter(user=user).delete() # Clear old master slots
         
-        start_date = datetime.date.today()
-        end_date = start_date + datetime.timedelta(days=120)
+        # 2. Save Master Schedule (The Template)
+        for day, subjects in weekly_schedule.items():
+            for i, sub_name in enumerate(subjects):
+                # A. Create Subject
+                is_lab = "LAB" in sub_name.upper()
+                subject, _ = Subject.objects.get_or_create(
+                    user=user,
+                    name=sub_name,
+                    defaults={
+                        'code': sub_name[:3].upper(),
+                        'is_theory': not is_lab
+                    }
+                )
+
+                # B. Create Slot (This enables history!)
+                TimetableSlot.objects.create(
+                    user=user,
+                    subject=subject,
+                    day=day.upper(),      # e.g., "MONDAY"
+                    time=f"Lecture {i+1}" # Generic time if not parsing columns
+                )
+
+        # 3. (Optional) Generate TODAY'S sessions immediately 
+        # So the dashboard isn't empty right after upload
+        today_name = datetime.date.today().strftime("%A").upper()
+        today_slots = TimetableSlot.objects.filter(user=user, day__iexact=today_name)
         
-        curr = start_date
-        while curr <= end_date:
-            day_name = curr.strftime("%A")
-            if day_name in weekly_schedule:
-                for sub_name in weekly_schedule[day_name]:
-                    subject, _ = Subject.objects.get_or_create(user=user, name=sub_name)
-                    AttendanceSession.objects.create(
-                        user=user, subject=subject, date=curr, status='Pending'
-                    )
-            curr += datetime.timedelta(days=1)
+        for slot in today_slots:
+            AttendanceSession.objects.create(
+                user=user,
+                subject=slot.subject,
+                date=datetime.date.today(),
+                status='Pending'
+            )
 
 # --- STATS UPDATER ---
 def update_attendance_stats(user):

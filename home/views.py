@@ -14,10 +14,9 @@ from .forms import SignUpForm, TimetableUploadForm
 from .utils import TimetableParser, update_attendance_stats
 # 🟢 UPDATED: Removed generate_formula_sheet from imports
 from .ai_utils import generate_notes, generate_deep_dive, generate_quiz
+from datetime import timedelta
+from .models import TimetableSlot
 
-# ==========================================
-# 🔐 AUTHENTICATION & LANDING
-# ==========================================
 
 def index(request):
     if request.user.is_authenticated:
@@ -76,36 +75,77 @@ def dashboard(request):
 def attendance(request):
     profile, created = StudentProfile.objects.get_or_create(user=request.user)
     
-    # ⚠️ DEV MODE: HARDCODED DATE (Change to datetime.date.today() later)
-    today = datetime.date(2026, 1, 19) 
+    # 1. 📅 DATE NAVIGATION
+    date_str = request.GET.get('date')
+    if date_str:
+        try:
+            current_date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            current_date = datetime.date.today()
+    else:
+        current_date = datetime.date.today()
 
-    # Logic A: Reset
+    prev_date = current_date - timedelta(days=1)
+    next_date = current_date + timedelta(days=1)
+
+    # 2. ⚡ LAZY GENERATOR (The "History" Fix)
+    # Check if we have sessions for this date. If NOT, generate them from Master Slots.
+    session_check = AttendanceSession.objects.filter(user=request.user, date=current_date).exists()
+    
+    if not session_check:
+        # Get the day name (e.g., "MONDAY")
+        day_name = current_date.strftime("%A").upper()
+        
+        # Find all master slots for this day
+        daily_slots = TimetableSlot.objects.filter(user=request.user, day__iexact=day_name)
+        
+        for slot in daily_slots:
+            AttendanceSession.objects.create(
+                user=request.user,
+                subject=slot.subject,
+                date=current_date,
+                status='Pending' # Default to Pending
+            )
+
+    # 3. ➕ ADD EXTRA SESSION
+    if request.method == 'POST' and 'add_extra_session' in request.POST:
+        subject_id = request.POST.get('subject_id')
+        if subject_id:
+            subject = get_object_or_404(Subject, id=subject_id, user=request.user)
+            AttendanceSession.objects.create(
+                user=request.user,
+                subject=subject,
+                date=current_date,
+                status='Pending'
+            )
+        return redirect(f'/attendance/?date={current_date}')
+
+    # 4. RESET (Updated to clear Slots too)
     if request.method == 'POST' and 'reset_timetable' in request.POST:
         AttendanceSession.objects.filter(user=request.user).delete()
         Subject.objects.filter(user=request.user).delete()
+        TimetableSlot.objects.filter(user=request.user).delete() # Clear Master Schedule
         profile.attendance_percentage = 0.0
         profile.save()
         return redirect('attendance')
 
-    # Logic B: Upload
+    # 5. UPLOAD
     if request.method == 'POST' and 'upload_file' in request.POST:
         form = TimetableUploadForm(request.POST, request.FILES)
         if form.is_valid():
             excel_file = request.FILES['file']
             batch = form.cleaned_data['batch']
-            
             parser = TimetableParser()
             success, message = parser.parse_excel(excel_file, request.user, batch)
-            
             if success:
-                update_attendance_stats(request.user)
+                # Redirect to today to trigger the Lazy Generator for the first time
                 return redirect('attendance')
             else:
                 return render(request, 'home/attendance.html', {
                     'form': form, 'error': message, 'has_timetable': False
                 })
 
-    # Logic C: Mark Attendance
+    # 6. MARK ATTENDANCE
     if request.method == 'POST' and 'session_id' in request.POST:
         session_id = request.POST.get('session_id')
         status = request.POST.get('status')
@@ -113,9 +153,10 @@ def attendance(request):
         session.status = status
         session.save()
         update_attendance_stats(request.user)
-        return redirect('attendance')
+        return redirect(f'/attendance/?date={current_date}')
 
-    # Logic D: Display
+    # 7. DISPLAY
+    # Check if we have subjects (indicates setup is done)
     has_timetable = Subject.objects.filter(user=request.user).exists()
     
     if not has_timetable:
@@ -123,20 +164,19 @@ def attendance(request):
             'form': TimetableUploadForm(), 'has_timetable': False
         })
 
-    todays_sessions = AttendanceSession.objects.filter(user=request.user, date=today).order_by('id')
+    todays_sessions = AttendanceSession.objects.filter(user=request.user, date=current_date).order_by('id')
     subjects = Subject.objects.filter(user=request.user)
     
     context = {
         'has_timetable': True,
         'todays_sessions': todays_sessions,
         'subjects': subjects,
-        'today_date': today.strftime("%A, %d %B %Y"),
+        'current_date': current_date,
+        'prev_date': prev_date,
+        'next_date': next_date,
+        'is_today': (current_date == datetime.date.today())
     }
     return render(request, 'home/attendance.html', context)
-
-# ==========================================
-# 📚 LIBRARY & SUBJECTS
-# ==========================================
 
 @login_required(login_url='login')
 def library_view(request):

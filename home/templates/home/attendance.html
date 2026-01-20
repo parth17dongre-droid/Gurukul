@@ -23,11 +23,18 @@
             <i class="fa-solid fa-calendar-check"></i> Attendance
         </a>
         
+        <a href="{% url 'library' %}" class="menu-item">
+            <i class="fa-solid fa-folder-open"></i> Library
+        </a>
+
         <a href="{% url 'ai_notes' %}" class="menu-item">
             <i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes
         </a>
+
+        <a href="{% url 'quiz' %}" class="menu-item">
+            <i class="fa-solid fa-clipboard-question"></i> Daily Quiz
+        </a>
         
-        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-clipboard-question"></i> Quizzes</div>
         <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-chart-line"></i> CGPA</div>
 
         <form action="{% url 'logout' %}" method="post" style="margin-top: auto;">
@@ -43,8 +50,30 @@
         <div class="header">
             <div>
                 <h1 style="font-size: 1.8rem; font-weight: 600;">Attendance Tracker</h1>
+                
+                {% if has_timetable %}
+                <div style="display: flex; align-items: center; gap: 15px; margin-top: 5px; color: var(--text-muted);">
+                    <a href="?date={{ prev_date|date:'Y-m-d' }}" style="color: inherit; text-decoration: none; padding: 5px;">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </a>
+                    
+                    <span style="color: white; font-weight: 500;">
+                        {% if is_today %}
+                            Today
+                        {% else %}
+                            {{ current_date|date:"l, M d" }}
+                        {% endif %}
+                    </span>
+                    
+                    <a href="?date={{ next_date|date:'Y-m-d' }}" style="color: inherit; text-decoration: none; padding: 5px;">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                </div>
+                {% else %}
                 <p style="color: var(--text-muted);">{{ today_date }}</p>
+                {% endif %}
             </div>
+
             <div class="user-pill">
                 <i class="fa-regular fa-user"></i> {{ user.username|title }}
             </div>
@@ -105,8 +134,30 @@
             </div>
 
         {% else %}
-            <h3 style="margin-bottom: 20px; font-weight: 500; color: var(--text-muted);">Today's Schedule</h3>
             
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-weight: 500; color: var(--text-muted);">Schedule for {{ current_date|date:"D, M d" }}</h3>
+            </div>
+
+            <form method="post" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; margin-bottom: 25px; display: flex; gap: 10px; align-items: center; border: 1px solid rgba(255,255,255,0.05);">
+                {% csrf_token %}
+                <input type="hidden" name="add_extra_session" value="true">
+                
+                <div style="display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; background: rgba(255,255,255,0.1); border-radius: 50%;">
+                    <i class="fa-solid fa-plus" style="color: var(--success); font-size: 0.8rem;"></i>
+                </div>
+                
+                <span style="color: var(--text-muted); font-size: 0.9rem; white-space: nowrap;">Extra Class:</span>
+                
+                <select name="subject_id" style="flex: 1; background: #1f2937; color: white; border: 1px solid rgba(255,255,255,0.2); padding: 8px; border-radius: 5px; outline: none;">
+                    {% for sub in subjects %}
+                        <option value="{{ sub.id }}">{{ sub.name }}</option>
+                    {% endfor %}
+                </select>
+                
+                <button type="submit" class="btn-glass btn-sm" style="border: 1px solid var(--success); color: var(--success);">Add</button>
+            </form>
+
             <div class="bento-grid">
                 {% if todays_sessions %}
                     {% for session in todays_sessions %}
@@ -154,7 +205,7 @@
                     {% endfor %}
                 {% else %}
                     <div class="glass-panel session-card" style="grid-column: 1 / -1; padding: 40px; text-align: center; border-style: dashed; display: block;">
-                        <p style="color: var(--text-muted);">No classes scheduled for today.</p>
+                        <p style="color: var(--text-muted);">No classes scheduled for this date.</p>
                     </div>
                 {% endif %}
             </div>
@@ -200,8 +251,8 @@
                                 {% else %}
                                     <div style="height: 8px; background: var(--accent); border-radius: 4px; overflow: hidden; width: 100%;">
                                         <div style="height: 100%; width: {{ sub.attendance_percentage }}%; 
-                                                        background: var(--success); 
-                                                        transition: width 0.5s ease;">
+                                                    background: var(--success); 
+                                                    transition: width 0.5s ease;">
                                         </div>
                                     </div>
                                 {% endif %}

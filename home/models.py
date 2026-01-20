@@ -41,6 +41,15 @@ class Subject(models.Model):
     def __str__(self):
         return self.name
 
+class TimetableSlot(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    day = models.CharField(max_length=20)  # e.g., "MONDAY"
+    time = models.CharField(max_length=50) # e.g., "10:00 - 11:00"
+
+    def __str__(self):
+        return f"{self.day}: {self.subject.name} ({self.time})"
+
 # 3. Attendance Session
 class AttendanceSession(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
