@@ -6,18 +6,14 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 import datetime
+import traceback  # Added for debugging
 
 # Local imports
-# ✅ CORRECT LINE
-from .models import StudentProfile, AttendanceSession, Subject, AINote
+from .models import StudentProfile, AttendanceSession, Subject, AINote, TimetableSlot
 from .forms import SignUpForm, TimetableUploadForm
 from .utils import TimetableParser, update_attendance_stats
-# 🟢 UPDATED: Removed generate_formula_sheet from imports
 from .ai_utils import generate_notes, generate_deep_dive, generate_quiz
 from datetime import timedelta
-from .models import TimetableSlot
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
 
 def index(request):
     if request.user.is_authenticated:
@@ -29,12 +25,31 @@ def signup_view(request):
         return redirect('dashboard')
 
     if request.method == 'POST':
+        # DEBUG 1: Check if request reaches here
+        print("DEBUG: Signup POST request received", flush=True)
+        
         form = SignUpForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            StudentProfile.objects.create(user=user)
-            login(request, user)
-            return redirect('dashboard')
+            # DEBUG 2: Form is valid
+            print("DEBUG: Form is valid. Attempting to save...", flush=True)
+            
+            try:
+                user = form.save()
+                print(f"DEBUG: User {user.username} created successfully!", flush=True)
+                
+                StudentProfile.objects.create(user=user)
+                print("DEBUG: StudentProfile created successfully!", flush=True)
+                
+                login(request, user)
+                return redirect('dashboard')
+                
+            except Exception as e:
+                # DEBUG 3: CATCH THE ERROR
+                print(f"CRITICAL ERROR SAVING USER: {e}", flush=True)
+                traceback.print_exc()
+        else:
+            # DEBUG 4: Print validation errors
+            print(f"DEBUG: Form Invalid Errors: {form.errors}", flush=True)
     else:
         form = SignUpForm()
     
@@ -90,14 +105,10 @@ def attendance(request):
     next_date = current_date + timedelta(days=1)
 
     # 2. ⚡ LAZY GENERATOR (The "History" Fix)
-    # Check if we have sessions for this date. If NOT, generate them from Master Slots.
     session_check = AttendanceSession.objects.filter(user=request.user, date=current_date).exists()
     
     if not session_check:
-        # Get the day name (e.g., "MONDAY")
         day_name = current_date.strftime("%A").upper()
-        
-        # Find all master slots for this day
         daily_slots = TimetableSlot.objects.filter(user=request.user, day__iexact=day_name)
         
         for slot in daily_slots:
@@ -105,7 +116,7 @@ def attendance(request):
                 user=request.user,
                 subject=slot.subject,
                 date=current_date,
-                status='Pending' # Default to Pending
+                status='Pending'
             )
 
     # 3. ➕ ADD EXTRA SESSION
@@ -121,11 +132,11 @@ def attendance(request):
             )
         return redirect(f'/attendance/?date={current_date}')
 
-    # 4. RESET (Updated to clear Slots too)
+    # 4. RESET
     if request.method == 'POST' and 'reset_timetable' in request.POST:
         AttendanceSession.objects.filter(user=request.user).delete()
         Subject.objects.filter(user=request.user).delete()
-        TimetableSlot.objects.filter(user=request.user).delete() # Clear Master Schedule
+        TimetableSlot.objects.filter(user=request.user).delete()
         profile.attendance_percentage = 0.0
         profile.save()
         return redirect('attendance')
@@ -139,7 +150,6 @@ def attendance(request):
             parser = TimetableParser()
             success, message = parser.parse_excel(excel_file, request.user, batch)
             if success:
-                # Redirect to today to trigger the Lazy Generator for the first time
                 return redirect('attendance')
             else:
                 return render(request, 'home/attendance.html', {
@@ -157,7 +167,6 @@ def attendance(request):
         return redirect(f'/attendance/?date={current_date}')
 
     # 7. DISPLAY
-    # Check if we have subjects (indicates setup is done)
     has_timetable = Subject.objects.filter(user=request.user).exists()
     
     if not has_timetable:
@@ -341,11 +350,8 @@ def deep_dive_view(request):
 @login_required
 def profile_view(request):
     try:
-        # Attempts to fetch the 'studentprofile' linked to the user
-        # This requires a OneToOneField in your models.py
         profile = request.user.studentprofile
     except AttributeError:
-        # If the user doesn't have a profile in the database, profile is None
         profile = None
 
     context = {
