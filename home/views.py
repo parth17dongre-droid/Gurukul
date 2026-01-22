@@ -16,7 +16,8 @@ from .utils import TimetableParser, update_attendance_stats
 from .ai_utils import generate_notes, generate_deep_dive, generate_quiz
 from datetime import timedelta
 from .models import TimetableSlot
-
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 
 def index(request):
     if request.user.is_authenticated:
@@ -336,3 +337,20 @@ def deep_dive_view(request):
             return JsonResponse({'error': str(e)}, status=500)
     
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+@login_required
+def profile_view(request):
+    try:
+        # Attempts to fetch the 'studentprofile' linked to the user
+        # This requires a OneToOneField in your models.py
+        profile = request.user.studentprofile
+    except AttributeError:
+        # If the user doesn't have a profile in the database, profile is None
+        profile = None
+
+    context = {
+        'user': request.user,
+        'profile': profile, 
+    }
+
+    return render(request, 'home/profile.html', context)
