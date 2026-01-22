@@ -1,13 +1,12 @@
 import pandas as pd
 import datetime
 import re
-# 🟢 UPDATED: Added TimetableSlot to imports
 from .models import Subject, AttendanceSession, StudentProfile, TimetableSlot
 
 class TimetableParser:
     def parse_excel(self, file, user, batch):
         try:
-            print(f"\n🚀 STARTING LAB-TAGGED PARSE FOR BATCH: {batch}")
+            print(f"\n🚀 STARTING ROBUST PARSE FOR BATCH: {batch}")
             
             # 1. READ ALL SHEETS
             try:
@@ -83,6 +82,11 @@ class TimetableParser:
                     cell_text = str(cell_text).strip()
                     if len(cell_text) < 2 or cell_text == "nan": continue
 
+                    # 🟢 CRITICAL FIX: REMOVE BRACKETS BEFORE SPLITTING
+                    # This fixes the issue where "Sub (ARD/SK)" became two subjects
+                    cell_text = re.sub(r'\(.*?\)', '', cell_text)
+                    cell_text = cell_text.replace('(', '').replace(')', '') # Cleanup strays
+
                     # --- D. SPLIT & CLEAN ---
                     parts = re.split(r'[\n/]', cell_text)
                     
@@ -94,12 +98,10 @@ class TimetableParser:
                         final_subject = self.process_part(part, batch)
                         
                         if final_subject and len(final_subject) > 1:
-                            # Avoid duplicates in the same day (optional, but cleaner)
-                            # if final_subject not in weekly_schedule[day_name]:
                             print(f"      🔹 ADDED: {final_subject} ({day_name})")
                             weekly_schedule[day_name].append(final_subject)
 
-            # 4. SAVE TO DATABASE (Updated for History/Lazy Loading)
+            # 4. SAVE TO DATABASE
             self.create_db_sessions(user, weekly_schedule)
             return True, f"Success! Loaded schedule from '{found_sheet_name}'."
 
@@ -116,7 +118,10 @@ class TimetableParser:
 
     def process_part(self, text, user_batch):
         # 1. Junk Filter
-        junk_keywords = ["LUNCH", "ELH", "MENTOR", "BREAK", "TEA", "RECESS", "TIME", "SATURDAY"]
+        junk_keywords = [
+            "LUNCH", "ELH", "MENTOR", "BREAK", "TEA", "RECESS", "TIME", "SATURDAY",
+            "DEPARTMENT", "MEETING" 
+        ]
         if any(junk in text.upper() for junk in junk_keywords):
             return None
 
@@ -152,17 +157,13 @@ class TimetableParser:
             match = re.search(re.escape(batch), text, re.IGNORECASE)
             if match: text = text[match.end():]
         
-        # 2. Remove brackets (...)
-        text = re.sub(r'\s*\(.*?\)', '', text)
-        
-        # 3. Cleanup junk
+        # 2. Cleanup junk
         text = text.replace(':', '').replace('-', '').replace('CSE', '').replace('IT', '').strip()
         
-        # 4. Final check
+        # 3. Final check
         if len(text) < 2: return None
         return text
 
-    # 🟢 UPDATED: This now saves the "Master Schedule" (TimetableSlot)
     def create_db_sessions(self, user, weekly_schedule):
         # 1. Clear OLD data
         AttendanceSession.objects.filter(user=user).delete()
@@ -187,12 +188,11 @@ class TimetableParser:
                 TimetableSlot.objects.create(
                     user=user,
                     subject=subject,
-                    day=day.upper(),      # e.g., "MONDAY"
-                    time=f"Lecture {i+1}" # Generic time if not parsing columns
+                    day=day.upper(),      
+                    time=f"Lecture {i+1}" 
                 )
 
-        # 3. (Optional) Generate TODAY'S sessions immediately 
-        # So the dashboard isn't empty right after upload
+        # 3. Generate TODAY'S sessions immediately 
         today_name = datetime.date.today().strftime("%A").upper()
         today_slots = TimetableSlot.objects.filter(user=user, day__iexact=today_name)
         
