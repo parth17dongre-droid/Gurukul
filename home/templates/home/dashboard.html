@@ -50,9 +50,9 @@
                 <h1 style="font-size: 1.8rem; font-weight: 600;">Good Morning, {{ user.username|title }}</h1>
                 <p style="color: var(--text-muted);">Here is your daily overview.</p>
             </div>
-            <div class="user-pill">
-                <i class="fa-regular fa-user"></i> Student
-            </div>
+            <a href="{% url 'profile' %}" class="user-pill" style="text-decoration: none; color: inherit; cursor: pointer; transition: 0.3s;">
+                <i class="fa-regular fa-user"></i> Student Profile
+            </a>
         </div>
 
         <div class="bento-grid">

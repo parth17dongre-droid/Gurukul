@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Gurukul AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'home/style.css' %}">
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-brain" style="color: var(--primary);"></i> Gurukul
+        </div>
+        
+        <a href="{% url 'dashboard' %}" class="menu-item">
+            <i class="fa-solid fa-house"></i> Dashboard
+        </a>
+        <a href="{% url 'attendance' %}" class="menu-item">
+            <i class="fa-solid fa-calendar-check"></i> Attendance
+        </a>
+        <a href="{% url 'library' %}" class="menu-item">
+            <i class="fa-solid fa-folder-open"></i> Library
+        </a>
+        <a href="{% url 'ai_notes' %}" class="menu-item">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Notes
+        </a>
+        <a href="{% url 'quiz' %}" class="menu-item">
+            <i class="fa-solid fa-clipboard-question"></i> Daily Quiz
+        </a>
+        
+        <div class="menu-item" style="opacity: 0.5;"><i class="fa-solid fa-chart-line"></i> CGPA</div>
+
+        <form action="{% url 'logout' %}" method="post" style="margin-top: auto;">
+            {% csrf_token %}
+            <button type="submit" class="menu-item" style="background: none; border: none; width: 100%; cursor: pointer; color: var(--accent);">
+                <i class="fa-solid fa-power-off"></i> Logout
+            </button>
+        </form>
+    </nav>
+
+    <main class="main-content">
+        
+        <div class="header">
+            <div>
+                <h1 style="font-size: 1.8rem; font-weight: 600;">Student Profile</h1>
+                <p style="color: var(--text-muted);">Manage your personal information.</p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="user-pill" style="text-decoration: none; color: inherit;">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="bento-grid">
+            
+            <div class="session-card" style="grid-column: span 3; display: flex; align-items: center; gap: 30px; padding: 30px;">
+                <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
+                    {{ user.username|make_list|first|upper }}
+                </div>
+                <div style="flex: 1;">
+                    <h2 style="margin: 0; font-size: 1.8rem;">{{ user.first_name }} {{ user.last_name }}</h2>
+                    <p style="color: var(--text-muted); margin-top: 5px; font-family: monospace;">@{{ user.username }}</p>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <span style="background: rgba(99,102,241,0.1); color: var(--primary); padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; border: 1px solid rgba(99,102,241,0.2);">
+                            Student
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="session-card" style="grid-column: span 2;">
+                <h3 style="margin-bottom: 20px; color: var(--secondary);">Academic Information</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">Email</p>
+                        <div style="font-weight: 500;">{{ user.email|default:"N/A" }}</div>
+                    </div>
+                    <div>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">Branch</p>
+                        <div style="font-weight: 500;">{{ profile.branch|default:"N/A" }}</div>
+                    </div>
+                    <div>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">Semester</p>
+                        <div style="font-weight: 500;">{{ profile.semester|default:"N/A" }}</div>
+                    </div>
+                    <div>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">Roll Number</p>
+                        <div style="font-weight: 500;">{{ profile.roll_number|default:"N/A" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="session-card">
+                <div style="margin-bottom: 10px;"><i class="fa-solid fa-graduation-cap" style="color: var(--success);"></i> Current CGPA</div>
+                <div style="font-size: 2rem; font-weight: 700;">
+                    {% if profile.current_cgpa %}
+                        {{ profile.current_cgpa }}
+                    {% else %}
+                        <span style="font-size: 1rem; color: var(--text-muted);">N/A</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="session-card">
+                <div style="margin-bottom: 10px;"><i class="fa-solid fa-user-clock" style="color: var(--accent);"></i> Attendance</div>
+                <div style="font-size: 2rem; font-weight: 700;">
+                    {% if profile.attendance_percentage %}
+                        {{ profile.attendance_percentage }}%
+                    {% else %}
+                        <span style="font-size: 1rem; color: var(--text-muted);">N/A</span>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const cards = document.querySelectorAll(".session-card");
+            cards.forEach((card) => {
+                card.addEventListener("mousemove", (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    const sensitivity = 35; 
+                    const rotateX = (-y / sensitivity).toFixed(2);
+                    const rotateY = (x / sensitivity).toFixed(2);
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(0.98)`;
+                });
+                card.addEventListener("mouseleave", () => {
+                    card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)";
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
